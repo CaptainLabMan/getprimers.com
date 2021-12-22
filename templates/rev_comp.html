@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  GP Reverse complement
+{% endblock %}
+
+{% block main_cont %}
+  <form action="#" name="form" id="form" method="post">
+  </form>
+
+  <div class="sticky-top border shadow p-0" style="top: 3%; border-radius: 15px;">
+    <h5 class="text-dark mx-3 mt-4">Reverse complement 1</h5>
+    <div class="text-center w-100" style="border-radius: 0px 0px 15px 15px;">
+      <div class="card card-body rounded border-0">
+        <textarea name="seq_for_rc" form='form' rows="8" cols="80" style="color: #6C757D; border-color: #CED4DA" placeholder=" >Paste sequence" oninput='get_len_seq();'></textarea>
+        <div class="input-group mb-3">
+          <p class="text-start m-0" style='color: #6C757D; width: 30%;' id='get_gc_content'>GC: 0</p>
+          <button class="btn btn-link m-0 text-center p-0 text-secondary" type="button" style="width: 40%;" onclick='get_clear_seq()'>
+              Clear from Ensembl elements
+          </button>
+          <p class="text-end m-0" style='color: #6C757D; width: 30%;' id='get_len_seq_1'>Length: 0</p>
+        </div>
+      </div>
+      <button class="btn btn-sm m-0 mx-2 border-0 bg-primary" type="button" style="color: white; width: 200px; border-radius: 15px;" onclick='get_reverse_complement()'>
+          Reverse complement
+      </button>
+      <div class="card card-body rounded-0 border-0 mt-4">
+        <textarea rows="8" cols="80" style="color: #6C757D; border-color: #CED4DA" id='response_textarea' readonly></textarea>
+      </div>
+      <br>
+    </div>
+  </div>
+
+  <script>
+          function get_len_seq() {
+              $.ajax({
+                  type: "POST",
+                  url: "/get_len_seq",
+                  type: 'POST',
+                  data: $('form').serialize(),
+                  success: function(response) {
+                      $('#get_len_seq_1').html(response)
+                      console.log(response);
+                  },
+                  error: function(error) {
+                      console.log(error);
+                  }
+              });
+              $.ajax({
+                  type: "POST",
+                  url: "/get_gc_content_page",
+                  type: 'POST',
+                  data: $('form').serialize(),
+                  success: function(response) {
+                      $('#get_gc_content').html(response)
+                      console.log(response);
+                  },
+                  error: function(error) {
+                      console.log(error);
+                  }
+              });
+          }
+  </script>
+
+  <script>
+              function get_reverse_complement() {
+                  $.ajax({
+                      type: "POST",
+                      url: "/get_reverse_complement",
+                      type: 'POST',
+                      data: $('form').serialize(),
+                      success: function(response) {
+                          $('#response_textarea').html(response)
+                          console.log(response);
+                      },
+                      error: function(error) {
+                          console.log(error);
+                      }
+                  });
+              }
+  </script>
+
+  <script>
+              function get_clear_seq() {
+                  $.ajax({
+                      type: "POST",
+                      url: "/get_clear_seq",
+                      type: 'POST',
+                      data: $('form').serialize(),
+                      success: function(response) {
+                          $('#response_textarea').html(response)
+                          console.log(response);
+                      },
+                      error: function(error) {
+                          console.log(error);
+                      }
+                  });
+              }
+  </script>
+
+{% endblock %}
+
+{% block side_cont %}
+  <div class="sticky-top border shadow p-0" style="top: 3%; border-radius: 15px;">
+    <h5 class="text-dark mx-3 mt-4">Reverse complement 2</h5>
+    <div class="text-center w-100" style="border-radius: 0px 0px 15px 15px;">
+      <div class="card card-body rounded border-0">
+        <textarea name="seq_for_rc_2" form='form' rows="8" cols="80" style="color: #6C757D; border-color: #CED4DA" placeholder=" >Paste sequence" oninput='get_len_seq_2()'></textarea>
+        <div class="input-group mb-3">
+          <p class="text-start m-0" style='color: #6C757D; width: 60%;' id='get_gc_content_2'>GC: 0</p>
+          <p class="text-end m-0" style='color: #6C757D; width: 40%;' id='get_len_seq_2'>Length: 0</p>
+        </div>
+      </div>
+      <button class="btn btn-sm m-0 mx-2 border-0 bg-primary" type="button" style="color: white; width: 200px; border-radius: 15px;" onclick='get_reverse_complement_2()'>
+          Reverse complement
+      </button>
+      <div class="card card-body rounded-0 border-0 mt-4">
+        <textarea rows="8" cols="80" style="color: #6C757D; border-color: #CED4DA" id='response_textarea_2' readonly></textarea>
+      </div>
+      <br>
+    </div>
+  </div>
+
+  <script>
+          function get_len_seq_2() {
+              $.ajax({
+                  type: "POST",
+                  url: "/get_len_seq_2",
+                  type: 'POST',
+                  data: $('form').serialize(),
+                  success: function(response) {
+                      $('#get_len_seq_2').html(response)
+                      console.log(response);
+                  },
+                  error: function(error) {
+                      console.log(error);
+                  }
+              });
+              $.ajax({
+                  type: "POST",
+                  url: "/get_gc_content_page_2",
+                  type: 'POST',
+                  data: $('form').serialize(),
+                  success: function(response) {
+                      $('#get_gc_content_2').html(response)
+                      console.log(response);
+                  },
+                  error: function(error) {
+                      console.log(error);
+                  }
+              });
+          }
+  </script>
+
+  <script>
+              function get_reverse_complement_2() {
+                  $.ajax({
+                      type: "POST",
+                      url: "/get_reverse_complement_2",
+                      type: 'POST',
+                      data: $('form').serialize(),
+                      success: function(response) {
+                          $('#response_textarea_2').html(response)
+                          console.log(response);
+                      },
+                      error: function(error) {
+                          console.log(error);
+                      }
+                  });
+              }
+  </script>
+
+{% endblock %}

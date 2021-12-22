@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+    <html lang="en" dir="ltr">
+      <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <title>Results</title>
+      </head>
+      <body style='background-color: #F2F2F2; margin-bottom: 80px;'>
+
+
+          <header class="navbar sticky-top navbar-expand-lg navbar-dark shadow-sm navbar-dark p-2" style="background-color: #48A691;">
+            <div class='container-fluid p-1'>
+              <a class="navbar-brand p-0" href="/">
+                <img src="https://svgshare.com/i/Stf.svg" width="250" height="40" class="d-inline-block align-top m-0" alt="" loading="lazy">
+              </a>
+              <a href="/about" class='px-2'style='color: #FFFFFF;'>ABOUT</a>
+            </div>
+          </header>
+
+          <div class="nav shadow-sm p-2 px-3" style="background-color: #CED4DA; color: #6C757D">
+            Results
+          </div>
+
+          <br>
+
+          <div class="container">
+            <div class="row">
+                <div class="col-8">
+                  <div class="text-dark shadow-sm rounded-0 p-3" style='background-color: #FFFFFF;'>
+                    <h4 class='mb-3'>{{ gene }} - {{ transcript }}</h4>
+
+                    {% for exon in data %}
+
+                    <div class="border my-3">
+                      <p>
+                        {% if 'Primer_pair_1 ' in data[exon] %}
+                        <a class="btn rounded-0 w-100 border-0 text-left pl-2" data-toggle="collapse" href="#{{ exon + '_Sequence'}}" role="button" aria-expanded="false" aria-controls="collapseExample" style="background-color: #E8EFE7; width: 200px;">
+                          {{ exon }}
+                        </a>
+                        {% else %}
+                        <a class="btn rounded-0 w-100 border-0 text-left pl-2" data-toggle="collapse" href="#{{ exon + '_Sequence'}}" role="button" aria-expanded="false" aria-controls="collapseExample" style="background-color: #FFB5B5; width: 200px;">
+                          {{ exon }}
+                        </a>
+                        {% endif %}
+                      </p>
+
+                      <div class="collapse" id="{{ exon + '_Sequence'}}">
+                        <div id="carouselExampleInterval" class="carousel slide data-ride="carousel data-interval="false" style='background-color: #FFFFFF;'>
+                          <div class="carousel-inner">
+                            <div class="carousel-item active px-4" data-interval="false">
+                              <p class="text-break fs fs-1 pb-1">
+                                {{ data[exon].exon_sequence }}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+
+                      {% if 'Primer_pair_1 ' in data[exon] %}
+                      <div id="{{ exon }}" class="carousel text-center slide data-ride=" carousel data-interval="false" style='background-color: #FFFFFF;'>
+                        <div class="carousel-inner">
+
+                            {% for primer in data[exon] %}
+                              {% if 'Primer_pair' in primer %}
+                                {% if 'Primer_pair_1 ' in primer %}
+                                <div class="carousel-item active" data-interval="false">
+                                  <table class='table table-borderless table-sm text-left'>
+                                    <thead class='border-top border-bottom'>
+                                      <tr>
+                                        <th scope='col'>{{ primer }}</th>
+                                        <th scope='col'> {{ data[exon][primer].direct_F }} </th>
+                                        <th scope='col'>Length</th>
+                                        <th scope='col'>Tm</th>
+                                        <th scope='col'>GC</th>
+                                        <th scope='col'>S-C</th>
+                                        <th scope='col'>S-3'-C</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <th scope='row'>Forward</th>
+                                        <td> {{ data[exon][primer].seq_F }} </td>
+                                        <td> {{ data[exon][primer].len_F }} </td>
+                                        <td> {{ data[exon][primer].tm_F }} </td>
+                                        <td> {{ data[exon][primer].gc_F }} </td>
+                                        <td> {{ data[exon][primer].sc_F }} </td>
+                                        <td> {{ data[exon][primer].s3c_F }} </td>
+                                      </tr>
+                                      <tr>
+                                        <th scope='row'>Reverse</th>
+                                        <td> {{ data[exon][primer].seq_R }} </td>
+                                        <td> {{ data[exon][primer].len_R }} </td>
+                                        <td> {{ data[exon][primer].tm_R }} </td>
+                                        <td> {{ data[exon][primer].gc_R }} </td>
+                                        <td> {{ data[exon][primer].sc_R }} </td>
+                                        <td> {{ data[exon][primer].s3c_R }} </td>
+                                      </tr>
+                                      <tr>
+                                        <th scope='row'>Product length</th>
+                                        <td> {{ data[exon][primer].len_amp }} </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+
+                              {% else %}
+
+                                <div class="carousel-item" data-interval="false">
+                                  <table class='table table-borderless table-sm text-left'>
+                                    <thead class='border-top border-bottom'>
+                                      <tr>
+                                        <th scope='col'>{{ primer }}</th>
+                                        <th scope='col'> {{ data[exon][primer].direct_F }} </th>
+                                        <th scope='col'>Length</th>
+                                        <th scope='col'>Tm</th>
+                                        <th scope='col'>GC</th>
+                                        <th scope='col'>S-C</th>
+                                        <th scope='col'>S-3'-C</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <th scope='row'>Forward</th>
+                                        <td> {{ data[exon][primer].seq_F }} </td>
+                                        <td> {{ data[exon][primer].len_F }} </td>
+                                        <td> {{ data[exon][primer].tm_F }} </td>
+                                        <td> {{ data[exon][primer].gc_F }} </td>
+                                        <td> {{ data[exon][primer].sc_F }} </td>
+                                        <td> {{ data[exon][primer].s3c_F }} </td>
+                                      </tr>
+                                      <tr>
+                                        <th scope='row'>Reverse</th>
+                                        <td> {{ data[exon][primer].seq_R }} </td>
+                                        <td> {{ data[exon][primer].len_R }} </td>
+                                        <td> {{ data[exon][primer].tm_R }} </td>
+                                        <td> {{ data[exon][primer].gc_R }} </td>
+                                        <td> {{ data[exon][primer].sc_R }} </td>
+                                        <td> {{ data[exon][primer].s3c_R }} </td>
+                                      </tr>
+                                      <tr>
+                                        <th scope='row'>Product length</th>
+                                        <td> {{ data[exon][primer].len_amp }} </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              {% endif %}
+                            {% endif %}
+                          {% endfor %}
+
+                        </div>
+                        <a class="carousel-control-prev w-10" href="#{{ exon }}" role="button" data-slide="prev">
+                          <span class="#" aria-hidden="true"></span>
+                          <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next w-10" href="#{{ exon }}" role="button" data-slide="next">
+                          <span class="#" aria-hidden="true"></span>
+                          <span class="sr-only">Next</span>
+                        </a>
+                      </div>
+                      {% else %}
+                      <div>
+                        <p class='text-center'>Primers were not found.</p>
+                      </div>
+                      {% endif %}
+
+                    </div>
+
+                    {% endfor %}
+                  </div>
+                </div>
+
+              <div class="col-4">
+
+                <form action="#" name="form" id="form" method="post">
+                </form>
+
+                <div class="border-0 p-0" style="background-color: #6C757D; color: #FFFFFF; border-radius: 15px 15px 15px 15px;">
+                <button class="btn btn-sm border-0 text-center p-3 w-100" type="button" data-toggle="collapse" data-target="#collapseExample2" aria-expanded="false" aria-controls="collapseExample2" style="background-color: #6C757D; color: #FFFFFF; border-radius: 15px 15px 15px 15px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down" viewBox="0 0 16 16">
+                    <path d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659l4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z"/>
+                  </svg>
+                  Reverse complement
+                </button>
+
+                <div class="collapse text-center shadow w-100" id="collapseExample2" style="background-color: #6C757D; border-radius: 0px 0px 15px 15px;">
+                  <div class="card card-body rounded border-0 mx-2" style="background-color: #6C757D;">
+                    <textarea name="seq_for_rc" form='form' rows="5" cols="80" style="color: #6C757D; border-color: #CED4DA" placeholder=" >Paste sequence" oninput='get_len_seq()'></textarea>
+                    <p class="text-right m-0" style='color: white' id='get_len_seq_1'>Length: 0</p>
+                  </div>
+                  <button class="btn btn-sm m-0 mx-2" type="button" style="background-color: #CED4DA; color: #6C757D; width: 200px;" onclick='get_reverse_complement()'>
+                      Reverse complement
+                  </button>
+                  <div class="card card-body rounded-0 border-0 m-2 mt-4" style="background-color: #6C757D;">
+                    <textarea rows="5" cols="80" style="color: #6C757D; border-color: #CED4DA" id='response_textarea'></textarea>
+                  </div>
+                  <br>
+                </div>
+                </div>
+
+                <script>
+                        function get_len_seq() {
+                            $.ajax({
+                                type: "POST",
+                                url: "/get_len_seq",
+                                type: 'POST',
+                                data: $('form').serialize(),
+                                success: function(response) {
+                                    $('#get_len_seq_1').html(response)
+                                    console.log(response);
+                                },
+                                error: function(error) {
+                                    console.log(error);
+                                }
+                            });
+                        }
+                    </script>
+
+                    <script>
+                            function get_reverse_complement() {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/get_reverse_complement",
+                                    type: 'POST',
+                                    data: $('form').serialize(),
+                                    success: function(response) {
+                                        $('#response_textarea').html(response)
+                                        console.log(response);
+                                    },
+                                    error: function(error) {
+                                        console.log(error);
+                                    }
+                                });
+                            }
+                        </script>
+              </div>
+
+          </div>
+          </div>
+        {% block body %}{% endblock %}
+      </body>
+      <footer>
+        <div class="nav fixed-bottom text-secondary border-top" style="background-color: #F2F2F2;">
+          <p class='m-3'>Email: support@getprimers.com</p>
+      </footer>
+    </html>

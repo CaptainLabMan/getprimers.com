@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="GetPrimers allows you to quickly and easily design primers for PCR of any exons of genes with the ability to select primers taking into account polymorphisms.">
+    <meta name="Keywords" content="get primers, GetPrimers, primers, primers for pcr, exons, gene, genes, primers design, design, pcr, transcript, transcripts, primer blast, primer-blast, blast, genetics, ncbi, sequence, human, ensembl">
+    <title>GetPrimers</title>
+    <link rel="icon" href="/templates/favicon.ico" type='image/x-icon'>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+  </head>
+    <body style='background-color: #FFFFFF;'>
+      <header class="navbar navbar-expand-lg navbar-dark p-0 m-0 bg-dark d-none d-lg-block" style="background-color: #FFFFFF;">
+        <div class='container-fluid p-1'>
+          <a class="navbar-brand p-0 py-4" href="/">
+            <img src="https://svgshare.com/i/Stf.svg" width="340" height="50" class="d-inline-block align-top m-0" alt="GetPrimers" loading="lazy">
+          </a>
+          <ul class="navbar-nav">
+            <li class="ml-2">
+              <a href="/reverse_complement" target='_blank' class='px-2 text-right m-0' style='color: #FFFFFF; text-decoration: none'>REVERSE COMPLEMENT</a>
+            </li>
+            <li class="ml-2">
+              <a href="/about" target='_blank' class='px-2 text-right m-0' style='color: #FFFFFF; text-decoration: none'>ABOUT</a>
+            </li>
+          </ul>
+        </div>
+      </header>
+
+      <header class="navbar navbar-expand-lg navbar-dark p-0 m-0 bg-dark d-block d-lg-none" style="background-color: #FFFFFF;">
+        <div class='container-fluid p-1'>
+          <a class="navbar-brand p-0 py-4" href="/">
+            <img src="https://svgshare.com/i/Stf.svg" width="340" height="50" class="d-inline-block align-top m-0" alt="GetPrimers" loading="lazy">
+          </a>
+
+          <ul class="navbar-nav">
+            <div class="btn-group" role="group">
+            <li class="m-2">
+              <a href="/reverse_complement" target='_blank' class='btn btn-dark p-2 text-right m-0 border rounded' role="button" style='color: #FFFFFF;'>RC</a>
+            </li>
+            <li class="m-2">
+              <a href="/about" target='_blank' class='btn btn-dark p-2 text-right m-0 border rounded' role="button" style='color: #FFFFFF;'>AB</a>
+            </li>
+            </div>
+          </ul>
+        </div>
+      </header>
+
+        <script>
+                function get_len_seq() {
+                    $.ajax({
+                        type: "POST",
+                        url: "/get_len_seq",
+                        type: 'POST',
+                        data: $('form').serialize(),
+                        success: function(response) {
+                            $('#get_len_seq_1').html(response)
+                            console.log(response);
+                        },
+                        error: function(error) {
+                            console.log(error);
+                        }
+                    });
+                }
+            </script>
+
+            <script>
+                    function get_reverse_complement() {
+                        $.ajax({
+                            type: "POST",
+                            url: "/get_reverse_complement",
+                            type: 'POST',
+                            data: $('form').serialize(),
+                            success: function(response) {
+                                $('#response_textarea').html(response)
+                                console.log(response);
+                            },
+                            error: function(error) {
+                                console.log(error);
+                            }
+                        });
+                    }
+                </script>
+
+      <br>
+
+      <div class="offcanvas offcanvas-top" data-bs-scroll="true" tabindex="-1" id="offcanvasTop" aria-labelledby="offcanvasTopLabel" style="height: 77%;">
+        <div class="offcanvas-header">
+          <h5 id="offcanvasTopLabel">Advanced settings</h5>
+          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <div class="container">
+          <h6>Primer melting temperature (Tm):</h6>
+          <div class="input-group mb-0 text-left">
+            <span class="text-center border" style="width: 24.5%; border-radius: 6px 0px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Min</span>
+            <span class="text-center border" style="width: 24.5%; background-color: #F2F2F2; color: #6C757D;">Opt</span>
+            <span class="text-center border" style="width: 24.5%; border-radius: 0px 6px 0px 0px; border-right: 10px; background-color: #F2F2F2; color: #6C757D;">Max</span>
+            <span class="text-center border" style="width: 24.5%; margin-left: 2%; border-radius: 6px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Max Tm difference</span>
+          </div>
+          <div class="input-group pb-3 mb-3 text-left">
+            <input class="border text-center" type="text" form="form" name="PRIMER_MIN_TM" value='58' placeholder="58" style="width: 24.5%; border-radius: 0px 0px 0px 6px;">
+            <input class="border text-center" type="text" form="form" name="PRIMER_OPT_TM" value="60" placeholder="60" style="width: 24.5%;">
+            <input class="border text-center" type="text" form="form" name="PRIMER_MAX_TM" value="64" placeholder="64" style="width: 24.5%; border-radius: 0px 0px 6px 0px; border-right: 10px;">
+            <input class="border text-center" type="text" form="form" name="PRIMER_MAX_DIFF_TM" value="3" placeholder="3" style="width: 24.5%; margin-left: 2%; border-radius: 0px 0px 6px 6px;">
+          </div>
+
+          <h6>Primer size and Max Poly-X:</h6>
+          <div class="input-group mb-0 text-left">
+            <span class="text-center border" style="width: 24.5%; border-radius: 6px 0px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Min</span>
+            <span class="text-center border" style="width: 24.5%; background-color: #F2F2F2; color: #6C757D;">Opt</span>
+            <span class="text-center border" style="width: 24.5%; border-radius: 0px 6px 0px 0px; border-right: 10px; background-color: #F2F2F2; color: #6C757D;">Max</span>
+            <span class="text-center border" style="width: 24.5%; margin-left: 2%; border-radius: 6px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Max Poly-X</span>
+          </div>
+          <div class="input-group pb-3 mb-3 text-left">
+            <input class="border text-center" type="text" form="form" name="PRIMER_MIN_SIZE" value="15" placeholder="15" style="width: 24.5%; border-radius: 0px 0px 0px 6px;">
+            <input class="border text-center" type="text" form="form" name="PRIMER_OPT_SIZE" value="20" placeholder="20" style="width: 24.5%;">
+            <input class="border text-center" type="text" form="form" name="PRIMER_MAX_SIZE" value="25" placeholder="25" style="width: 24.5%; border-radius: 0px 0px 6px 0px; border-right: 10px;">
+            <input class="border text-center" type="text" form="form" name="POLYX" value="5" placeholder="5" style="width: 24.5%; margin-left: 2%; border-radius: 0px 0px 6px 6px;">
+          </div>
+
+          <div class="input-group">
+          <h6 style="width: 51%">PCR product size:</h6>
+          <h6 style="width: 49%">Primer GC content (%):</h6>
+          </div>
+          <div class="input-group mb-0 text-left">
+            <span class="text-center border" style="width: 24.5%; border-radius: 6px 0px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Min</span>
+            <span class="text-center border" style="width: 24.5%; border-radius: 0px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Max</span>
+            <span class="text-center border" style="width: 24.5%; margin-left: 1.96%; border-radius: 6px 0px 0px 0px; border-right: 10px; background-color: #F2F2F2; color: #6C757D;">Min</span>
+            <span class="text-center border" style="width: 24.5%; margin: 0% 0% 0% 0.04%; border-radius: 0px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Max</span>
+          </div>
+          <div class="input-group pb-3 mb-3 text-left">
+            <input class="border text-center" type="text" form="form" name="PRIMER_PRODUCT_MIN" value="70" placeholder="70" style="width: 24.5%; border-radius: 0px 0px 0px 6px;">
+            <input class="border text-center" type="text" form="form" name="PRIMER_PRODUCT_MAX" value="1150" placeholder="1150" style="width: 24.5%; border-radius: 0px 0px 6px 0px;">
+            <input class="border text-center" type="text" form="form" name="PRIMER_MIN_GC" value="20" placeholder="20" style="width: 24.5%; margin-left: 1.96%; border-radius: 0px 0px 0px 6px; border-right: 10px;">
+            <input class="border text-center" type="text" form="form" name="PRIMER_MAX_GC" value="80" placeholder="80" style="width: 24.5%; margin: 0% 0% 0% 0.04%; border-radius: 0px 0px 6px 0px;">
+          </div>
+
+          <div class="input-group">
+          <h6 style="width: 51%">Exon-save distances:</h6>
+          <h6 style="width: 49%">Primers-search distances:</h6>
+          </div>
+          <div class="input-group mb-0 text-left">
+            <span class="text-center border" style="width: 24.5%; border-radius: 6px 0px 0px 0px; background-color: #F2F2F2; color: #6C757D;">5'-exon-save distance</span>
+            <span class="text-center border" style="width: 24.5%; border-radius: 0px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">3'-exon-save distance</span>
+            <span class="text-center border" style="width: 24.5%; margin-left: 1.96%; border-radius: 6px 0px 0px 0px; border-right: 10px; background-color: #F2F2F2; color: #6C757D;">F-search distance</span>
+            <span class="text-center border" style="width: 24.5%; margin: 0% 0% 0% 0.04%; border-radius: 0px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">R-search distance</span>
+          </div>
+          <div class="input-group pb-3 mb-3 text-left">
+            <input class="border text-center" type="text" form="form" name="FIVE_SAVE_EXON_DISTANCE" value="65" placeholder="65" style="width: 24.5%; border-radius: 0px 0px 0px 6px;">
+            <input class="border text-center" type="text" form="form" name="THREE_SAVE_EXON_DISTANCE" value="65" placeholder="65" style="width: 24.5%; border-radius: 0px 0px 6px 0px;">
+            <input class="border text-center" type="text" form="form" name="F_SEARCH_DISTANCE" value="450" placeholder="450" style="width: 24.5%; margin-left: 1.96%; border-radius: 0px 0px 0px 6px; border-right: 6px;">
+            <input class="border text-center" type="text" form="form" name="R_SEARCH_DISTANCE" value="450" placeholder="450" style="width: 24.5%; margin: 0% 0% 0% 0.04%; border-radius: 0px 0px 6px 0px;">
+          </div>
+
+          <div class="input-group">
+          <h6 style="width: 51%">Cross-exons max size (b.p.):</h6>
+          <h6 style="width: 49%">Max MAF:</h6>
+          </div>
+          <div class="input-group mb-0 text-left">
+            <span class="text-center border" style="width: 25%; border-radius: 6px 6px 0px 0px; margin-right: 26%; background-color: #F2F2F2; color: #6C757D;">Max</span>
+            <span class="text-center border" style="width: 25%; border-radius: 6px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Max</span>
+          </div>
+          <div class="input-group mb-1 text-left">
+            <input class="border text-center" type="text" form="form" name="CROSS_EXONS_MAX_SIZE" value="600" placeholder="600" style="width: 25%; margin-right: 26%; border-radius: 0px 0px 6px 6px;">
+            <input class="border text-center" type="text" form="form" name="MAX_MAF" value="0.01" placeholder="0.01" style="width: 25%; border-radius: 0px 0px 6px 6px;">
+          </div>
+        </div>
+        </div>
+      </div>
+
+
+      <div class='container-md'>
+
+          <div class="rounded-0 border-top border-bottom mb-4 bg-white w-100" style="background-color: #E8F0FD; border-radius: 15px;">
+              {% block menu %}
+              {% endblock %}
+          </div>
+
+        <div class="row g-4">
+          <div class="col-lg-8 col-xs-12 col-sm-12 col-md-12">
+            <div class="text-dark border py-4 bg-white" style='border-radius: 15px;'>
+                <form action="/results" method="post" id='form' name='form'>
+                  <div class="input-group border-top border-bottom w-100">
+                    <input onchange="get_transcripts();" autocomplete="off" type="text" class="form-control rounded-0 border-0 form-control-lg shadow-none bg-light" name='gene' id='gene' placeholder="Enter gene" required>
+                  </div>
+
+                  <div id="transcripts_R1_1"></div>
+
+                  <div id="loading2" class='text-center mt-4' style='display: none;'>
+                    <img src="https://svgshare.com/i/T7q.svg" width="60" alt="Loading...">
+                  </div>
+
+                </form>
+
+
+
+                <script>
+                        function get_transcripts() {
+                            $.ajax({
+                                type: "POST",
+                                url: "/get_transcripts",
+                                data: $('form').serialize(),
+                                type: 'POST',
+                                success: function(response) {
+                                    $('#transcripts_R1_1').html(response)
+                                    console.log(response);
+                                },
+                                error: function(error) {
+                                    console.log(error);
+                                }
+                            });
+                            $("#loading2").show();
+                        }
+                    </script>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12">
+              <div class="sticky-top text-dark border shadow bg-white ml-4" style='top: 20%; background-color: #E8F0FD; border-radius: 15px;'>
+                  <h3 class="mb-3 text-center text-dark m-3 border-bottom pb-2">Quick settings</h3>
+                  <div class="form-check form-switch mx-3 pt-2">
+                    <input type="checkbox" class="form-check-input" id="customSwitch1" name='SEARCH_SPECIFIC_PRIMER' defval='checked' value='checked' checked form='form'>
+                    <label class="form-check-label" for="customSwitch1">Specific search</label>
+                  </div>
+                  <div class="form-check form-switch mx-3">
+                    <input type="checkbox" class="form-check-input" id="customSwitch3" name='NO_SNP' defval='checked' value='checked' checked form='form'>
+                    <label class="form-check-label" for="customSwitch3">Ignore binding sites containing SNPs</label>
+                  </div>
+                  <div class="form-check form-switch mx-3 pt-0">
+                    <input type="checkbox" class="form-check-input" id="customSwitch2" defval='checked' name='CROSS_SEARCH' value='checked' form='form'>
+                    <label class="form-check-label" for="customSwitch2">Cross-exons search</label>
+                  </div>
+                  <div class="form-check form-switch mx-3 pb-2">
+                    <input type="checkbox" class="form-check-input" id="customSwitch4" name='SHOW_PB_LINK' defval='checked' value='checked' checked form='form'>
+                    <label class="form-check-label" for="customSwitch4">Show link to Primer-BLAST</label>
+                  </div>
+                  <div class="d-none d-lg-block text-end mx-3">
+                    <button class="btn btn-sm btn-outline-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTop" aria-controls="offcanvasTop" style="border-radius: 10px;">
+                      Advanced settings
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="d-block d-lg-none text-end mx-3">
+                    <button class="btn btn-sm btn-outline-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTop" aria-controls="offcanvasTop" style="border-radius: 10px;">
+                      Advanced settings
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <button type="submit" id='disabled_button' class="btn btn-success w-100 btn-lg mt-3 border-0" style='border-radius: 0px 0px 15px 15px;' form='form' disabled>Get primers</button>
+                  <button type="submit" id='active_button' class="btn btn-success w-100 btn-lg mt-3 border-0" style='border-radius: 0px 0px 15px 15px; display: none' form='form'>Get primers</button>
+              </div>
+
+          </div>
+      </div>
+    </div>
+
+    <div id="loading1" class='text-center mt-3' style='display: none;'>
+      <br><br><br><br><br><br><br><br>
+      <img src='https://svgshare.com/i/T7X.svg'>
+      <h2 class='mt-5'style='color: #6C757D;'>Primers design in progress.</h2>
+      <h2 style='color: #6C757D;'>Please wait.</h2>
+    </div>
+    {% block body %}{% endblock %}
+    <div class="d-block d-lg-none">
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+    </div>
+    <div class="d-none d-lg-block">
+      <br>
+      <br>
+    </div>
+  </body>
+
+  <footer class="fixed-bottom">
+    <div class="text-end">
+      <a href="/reverse_complement" target='_blank'>
+        <img src="https://svgshare.com/i/ZQy.svg" width="32" height="32" class='btn p-0 text-right mx-2 mb-2 border text-secondary bg-primary' alt="GetPrimers" loading="lazy">
+      </a>
+    </div>
+    <div class="d-lg-block d-none text-secondary border-top py-1 text-right" style="background-color: #FFFFFF;">
+      <div class="row">
+        <div class="col-4 text-start px-4">
+          <span>Andrey Nekrasov ©</span>
+        </div>
+        <div class="col-4 text-center">
+          <span><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383l-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
+            </svg> captainlabman@gmail.com</span>
+        </div>
+        <div class="col-4 text-end px-4">
+          v.17.09 2021
+        </div>
+      </div>
+    </div>
+
+      <div class="d-block d-lg-none text-secondary border-top py-1 text-center" style="background-color: #FFFFFF;">
+        <div class="row">
+          <div class="col-12">
+            <span>Andrey Nekrasov ©</span>
+          </div>
+          <div class="col-12">
+            <span><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383l-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
+              </svg> captainlabman@gmail.com</span>
+          </div>
+          <div class="col-12">
+            v.17.09 2021
+          </div>
+        </div>
+      </div>
+  </footer>
+</html>

@@ -1,0 +1,9 @@
+{% if pb_server_status == 'overloaded' %}
+<div class="mt-2 p-2" id='server_status' style="color: red; margin-left: 32%; margin-right: 32%; border-radius: 15px;">
+  The server is processing a lot of requests.
+  <p class="mb-0">Waiting time can be significantly longer than expected.</p>
+</div>
+{% else %}
+<div id='server_status'>
+</div>
+{% endif %}

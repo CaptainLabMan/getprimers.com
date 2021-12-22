@@ -1,0 +1,648 @@
+<div class='container-md mb-5'>
+  <br>
+  <div class="row g-4">
+    <div class="col-lg-8 col-md-12">
+
+      <div class="text-dark border px-3 pt-3 pb-1" style='background-color: #FFFFFF; border-radius: 15px;'>
+        <div class="input-group mb-0">
+          <h4 class='pt-1 text-dark mt-1' style='width: 92%'>{{ gene }} - {{ transcript }}</h4>
+          {% if GCS_data == 'GRCh37' %}
+            <a class="btn btn-lg btn-outline-light border-0 text-center p-0 mr-0 rounded shadow-none" target='_blank' href="https://grch37.ensembl.org/{{ SPECIES }}/Transcript/Exons?g={{ gene_id }};t={{ transcript_id }}" role="button" style='width: 8%; border-radius: 10px;'>
+              <img src="/static/images/enslogo.png" alt="Ensembl" width="42px" height="42px" loading="lazy" class="mt-1">
+            </a>
+          {% elif GCS_data == 'GRCh38' %}
+            <a class="btn btn-lg btn-outline-light border-0 text-center p-0 mr-0 rounded shadow-none" target='_blank' href="https://www.ensembl.org/{{ SPECIES }}/Transcript/Exons?db=core;g={{ gene_id }};t={{ transcript_id }}" role="button" style='width: 8%; border-radius: 10px;'>
+              <img src="/static/images/enslogo.png" alt="Ensembl" width="42px" height="42px" loading="lazy" class="mt-1">
+            </a>
+          {% endif %}
+        </div>
+
+        {% for exon in data %}
+
+            <div class="offcanvas offcanvas-top" tabindex="-1" id="{{ exon + '_Schemes'}}" aria-labelledby="offcanvasTopLabel" style="height: 79%;">
+              <div class="offcanvas-header pt-4">
+                <h5 id="offcanvasTopLabel">{{ gene }} - {{ transcript }} - {{ exon.replace('_', ' ') }}</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+              </div>
+              <div class="offcanvas-body">
+                <div class="row mb-3 gy-3 text-center">
+                  <div class="col-lg-2 col-md-12">
+                  </div>
+                  {% if data[exon]['homopolymers'] == ['checked'] %}
+                    <div class="col-lg-2 col-md-12 px-2">
+                      <div class=" border border-warning bg-light fw-bold rounded">
+                        Homopolymers
+                      </div>
+                    </div>
+                  {% else %}
+                  <div class="col-lg-2 col-md-12 px-2">
+                    <div class="border bg-light fw-bold rounded">
+                      Homopolymers
+                    </div>
+                  </div>
+                  {% endif %}
+                  <div class="col-lg-8 col-md-12 px-0 mx-0">
+                    <div class="border bg-light border-secondary rounded">
+                      {{ data[exon].exon_sequence|length }} b. p.
+                    </div>
+                  </div>
+                </div>
+                {% for primer in data[exon] %}
+                  {% if 'Primer_pair' in primer %}
+                <div class="row px-1 text-center">
+                  <div class="col-lg-2 col-md-12">
+                    <div class="text-center px-0 fw-bold"><button class="btn btn-outline-dark border-0 m-0 py-0 px-2 shadow-none rounded fw-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_{{exon}}_{{primer}}" aria-controls="offcanvas_{{exon}}_{{primer}}">{{ primer.replace('_', ' ') }}</button></div>
+                    <div class="text-center px-0">(Product length: {{ data[exon][primer].len_amp }})</div>
+                  </div>
+                  <div class="col-lg-2 col-md-12">
+                    {% if "dict_with_homopolymers" in data[exon][primer] %}
+                      <div class="text-center px-0 text-warning"></div>
+                      {% for homopolymer in data[exon][primer]["dict_with_homopolymers"] %}
+                        {% if homopolymer == 'A' %}
+                          <span class="mx-1 p-0 border-bottom border-warning border-2">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                        {% elif homopolymer == 'T' %}
+                          <span class="mx-1 p-0 border-bottom border-info border-2">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                        {% elif homopolymer == 'G' %}
+                          <span class="mx-1 p-0 border-bottom border-danger border-2">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                        {% elif homopolymer == 'C' %}
+                          <span class="mx-1 p-0 border-bottom border-primary border-2">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                        {% endif %}
+                      {% endfor %}
+                    {% else %}
+                      <div class="text-center px-0 text-success">OK</div>
+                    {% endif %}
+                    <div class="text-center px-0"></div>
+                  </div>
+                  <div class="col-lg-8 col-md-12">
+                    <div class="row text-center">
+                      <div class="border-0 px-0 my-2 text-white" style="width: {{ data[exon][primer]['pre_primer'].percentage }}%;">1</div><div class="border border-primary bg-primary text-white text-center px-0 my-2" style="width: {{ data[exon][primer]['f_primer'].percentage }}%; border-radius: 6px 0px 0px 6px;">F</div><div class="border bg-light text-center px-0 my-2" style="width: {{ data[exon][primer]['first_gap'].percentage }}%;">{{ data[exon][primer]["first_gap"].len }}</div><div class="border border-success bg-success text-white text-center px-0 my-2" style="width: {{ data[exon][primer]['exon'].percentage }}%;">{{ data[exon][primer]["exon"].len }}</div><div class="border bg-light text-center px-0 my-2" style="width: {{ data[exon][primer]['second_gap'].percentage }}%;">{{ data[exon][primer]["second_gap"].len }}</div><div class="border border-danger bg-danger text-white text-center px-0 my-2" style="width: {{ data[exon][primer]['r_primer'].percentage }}%; border-radius: 0px 6px 6px 0px;">R</div><div class="border-0 px-0 my-2 text-white" style="width: {{ data[exon][primer]['post_primer'].percentage }}%;">1</div>
+                    </div>
+                  </div>
+                </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+
+        {% if 'Primer_pair_1 ' in data[exon] and not 'specific_checker' in data[exon] %}
+          <div class="border border-success my-3 p-1" style='border-radius: 6px;'>
+        {% elif 'Primer_pair_1 ' in data[exon] and 'specific_checker' in data[exon] %}
+          <div class="border border-warning my-3 p-1" style='border-radius: 6px;'>
+        {% else %}
+          <div class="border border-danger my-3 p-1" style='border-radius: 6px;'>
+        {% endif %}
+
+              {% if 'Primer_pair_1 ' in data[exon] %}
+              <div class="p-1">
+                {% if data[exon]['homopolymers'] == ['checked'] %}
+                  <button class="btn btn-md btn-secondary py-0 px-1 border border-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ exon + '_Schemes'}}" aria-controls="offcanvasTop">{{ exon.replace('_', ' ') }}</button>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill text-warning mx-0 px-0" viewBox="0 0 16 16">
+                    <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+                  </svg>
+                {% else %}
+                  <button class="btn btn-md btn-secondary py-0 px-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ exon + '_Schemes'}}" aria-controls="offcanvasTop">{{ exon.replace('_', ' ') }}</button>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill text-secondary mx-0 px-0" viewBox="0 0 16 16">
+                    <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+                  </svg>
+                {% endif %}
+                {% if 'similar_gene' in data[exon] %}
+                  <span class="text-start text-danger mx-2"> Similar sequence was found: {{ data[exon].similar_gene }} gene </span>
+                {% endif %}
+              </div>
+              {% else %}
+                <a class="btn w-100 text-start px-1 shadow-none" data-bs-toggle="collapse" href="#{{ exon + '_Sequence'}}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                  <span class="bg-secondary rounded text-white px-2 py-1">{{ exon.replace('_', ' ') }}</span>
+                  <span class="mx-1">
+                    Show sequence
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down" viewBox="0 0 16 16">
+                      <path d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659l4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z"/>
+                    </svg>
+                  </span>
+                  {% if 'similar_gene' in data[exon] %}
+                    <span class="text-start text-danger"> Similar sequence was found: {{ data[exon].similar_gene }} gene </span>
+                  {% endif %}
+                </a>
+              {% endif %}
+
+
+          {% if 'Primer_pair_1 ' not in data[exon] %}
+          <div class="collapse" id="{{ exon + '_Sequence'}}">
+                  <p class="text-break px-3 border-top pt-2">
+                    {{ data[exon].exon_sequence }}
+                  </p>
+          </div>
+          {% endif %}
+
+          {% if 'Primer_pair_1 ' in data[exon] %}
+          <div id="{{ exon }}_slide" class="carousel carousel-dark slide text-center rounded" data-bs-ride="carousel" data-bs-interval="false">
+
+            <div class="carousel-indicators m-0 p-1">
+              {% for primer_pair in data[exon] %}
+                {% if primer_pair == 'Primer_pair_1 ' %}
+                  {% if "dict_with_homopolymers" in data[exon][primer_pair] %}
+                    <button type="button" data-bs-target="#{{ exon }}_slide" aria-current="false" class="active rounded mw-100 bg-warning" data-bs-slide-to="{{(primer_pair.replace('_', ' ')).replace('Primer pair', '')|int - 1}}"></button>
+                  {% else %}
+                    <button type="button" data-bs-target="#{{ exon }}_slide" aria-current="false" class="active rounded mw-100" data-bs-slide-to="{{(primer_pair.replace('_', ' ')).replace('Primer pair', '')|int - 1}}"></button>
+                  {% endif %}
+                {% elif 'Primer_pair' in primer_pair %}
+                  {% if "dict_with_homopolymers" in data[exon][primer_pair] %}
+                    <button type="button" data-bs-target="#{{ exon }}_slide" aria-current="false" class="rounded mw-100 bg-warning" data-bs-slide-to="{{(primer_pair.replace('_', ' ')).replace('Primer pair', '')|int - 1}}"></button>
+                  {% else %}
+                  <button type="button" data-bs-target="#{{ exon }}_slide" aria-current="false" class="rounded mw-100" data-bs-slide-to="{{(primer_pair.replace('_', ' ')).replace('Primer pair', '')|int - 1}}"></button>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            <div class="carousel-inner">
+
+                {% for primer in data[exon] %}
+                  {% if 'Primer_pair' in primer %}
+                    {% if 'Primer_pair_1 ' in primer %}
+
+                    <div class="offcanvas offcanvas-top" data-bs-scroll="true" tabindex="-1" id="offcanvas_{{exon}}_{{primer.replace(' ', '')}}" aria-labelledby="offcanvas_{{exon}}_{{primer.replace(' ', '')}}_Label" style="height: 57.5%;">
+                      <div class="offcanvas-header pb-0">
+                        <button class="btn btn-outline-secondary border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ exon + '_Schemes'}}" aria-controls="offcanvasTop">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                          </svg>
+                        </button>
+                        <h5 id="offcanvas_{{exon}}_{{primer.replace(' ', '')}}_Label">{{ exon.replace('_', ' ') }} - {{ primer.replace('_', ' ') }}</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                      </div>
+                      <div class="offcanvas-body text-break text-start">
+                        <div class="pb-2 pt-0">
+                          {% if "dict_with_homopolymers" in data[exon][primer] %}
+                            <span>Longest homopolymers <span class="text-muted">(8-30 b. p.)</span>: </span>
+                          {% else %}
+                            <span class="text-success">Homopolymers (8-30 b. p.) was not found.</span>
+                          {% endif %}
+                          {% for homopolymer in data[exon][primer]["dict_with_homopolymers"] %}
+                            {% if homopolymer == 'A' %}
+                              <span class="mx-1 p-0 border-bottom border-warning border-3">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                            {% elif homopolymer == 'T' %}
+                              <span class="mx-1 p-0 border-bottom border-info border-3">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                            {% elif homopolymer == 'G' %}
+                              <span class="mx-1 p-0 border-bottom border-danger border-3">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                            {% elif homopolymer == 'C' %}
+                              <span class="mx-1 p-0 border-bottom border-primary border-3">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                            {% endif %}
+                          {% endfor %}
+                        </div>
+                        <div><span class="text-muted fw-light">{{ data[exon][primer]["pre_primer"].seq }}</span><span class="text-dark"><span class="border border-primary rounded" style="background-color: #E8EAF6;">{{ data[exon][primer]["f_primer"].seq }}</span>{{ data[exon][primer]["first_gap"].seq|safe }}<span class="border border-success rounded" style="background-color: #E8F5E9;">{{ data[exon][primer]["exon"].seq|safe }}</span>{{ data[exon][primer]["second_gap"].seq|safe }}</span><span class="border border-danger rounded" style="background-color: #FFEBEE;">{{ data[exon][primer]["r_primer"].seq }}</span><span class="text-muted fw-light">{{ data[exon][primer]["post_primer"].seq }}</span>
+                        </div>
+                        <br>
+                        <br>
+                        <div class="my-1">
+                          <div class="row px-5 text-center">
+                            <div class="border border-primary bg-primary text-white text-center px-0" style="width: {{ data[exon][primer]['f_primer'].partial_percentage }}%; border-radius: 6px 0px 0px 6px;">{{ data[exon][primer]["f_primer"].len }}</div><div class="border bg-light text-center px-0" style="width: {{ data[exon][primer]['first_gap'].partial_percentage }}%;">{{ data[exon][primer]["first_gap"].len }}</div><div class="border border-success bg-success text-white text-center px-0" style="width: {{ data[exon][primer]['exon'].partial_percentage }}%;">{{ data[exon][primer]["exon"].len }}</div><div class="border bg-light text-center px-0" style="width: {{ data[exon][primer]['second_gap'].partial_percentage }}%;">{{ data[exon][primer]["second_gap"].len }}</div><div class="border border-danger bg-danger text-white text-center px-0" style="width: {{ data[exon][primer]['r_primer'].partial_percentage }}%; border-radius: 0px 6px 6px 0px;">{{ data[exon][primer]["r_primer"].len }}</div>
+                          </div>
+                          <div class="my-1 mx-4 text-center border-start border-bottom border-end">
+                            {{ data[exon][primer].len_amp }}
+                          </div>
+                          <br>
+                          <br>
+                          <br>
+                          <div class="text-center">
+                            <span class="p-1 mx-1 border border-primary rounded" style="background-color: #E8EAF6;">Forward primer</span>
+                            <span class="p-1 mx-1 border border-success rounded" style="background-color: #E8F5E9;">Exon</span>
+                            <span class="p-1 mx-1 border border-danger rounded" style="background-color: #FFEBEE;">Reverse primer</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="carousel-item active rounded" data-bs-interval="false">
+                      <div class="table-responsive text-nowrap">
+                      <table class='mb-3 table table-borderless table-sm text-start'>
+                        <thead class='border-top border-bottom'>
+                          <tr>
+                            <th scope='col'>
+                              <div class="btn-group-toggle" data-toggle="buttons">
+                                  <input type="checkbox" class="btn-check" utocomplete="off" name='taken_primers' value='primer_checkbox_{{gene}}.{{exon}}.{{primer}}' id='primer_checkbox_{{gene}}_{{exon}}_{{primer}}' form='results_table_form'>
+                                  <label class="btn btn-outline-success m-0 p-0 px-1 shadow-none" for="primer_checkbox_{{gene}}_{{exon}}_{{primer}}">
+                                    {{ primer.replace('_', ' ') }}
+                                  </label>
+                              </div>
+                            </th>
+                            <th scope='col'>
+                              {% if "dict_with_homopolymers" in data[exon][primer] %}
+                                <button class="btn btn-outline-warning m-0 p-0 px-1 shadow-none rounded text-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_{{exon}}_{{primer}}" aria-controls="offcanvas_{{exon}}_{{primer}}">Sequence (5'->3')</button>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill text-warning mx-0 px-0" viewBox="0 0 16 16">
+                                  <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+                                </svg>
+                              {% else %}
+                                <button class="btn btn-outline-dark m-0 p-0 px-1 shadow-none rounded" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_{{exon}}_{{primer}}" aria-controls="offcanvas_{{exon}}_{{primer}}">Sequence (5'->3')</button>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill text-dark mx-0 px-0" viewBox="0 0 16 16">
+                                  <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+                                </svg>
+                              {% endif %}
+                              </th>
+                            <th scope='col'>Length</th>
+                            <th scope='col'>Tm</th>
+                            <th scope='col'>GC</th>
+                            <th scope='col'>S-C</th>
+                            <th scope='col'>S-3'-C</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope='row'>Forward</th>
+                            <td> {{ data[exon][primer].seq_F }} </td>
+                            <td> {{ data[exon][primer].len_F }} </td>
+                            <td> {{ data[exon][primer].tm_F }} </td>
+                            <td> {{ data[exon][primer].gc_F }} </td>
+                            {% if data[exon][primer].sc_F < '4' %}
+                              <td class="text-success"> {{ data[exon][primer].sc_F }} </td>
+                            {% elif data[exon][primer].sc_F > '3' and data[exon][primer].sc_F < '7' %}
+                              <td class="text-warning"> {{ data[exon][primer].sc_F }} </td>
+                            {% elif data[exon][primer].sc_F > '6' %}
+                              <td class="text-danger"> {{ data[exon][primer].sc_F }} </td>
+                            {% endif %}
+                            {% if data[exon][primer].s3c_F < '2' %}
+                              <td class="text-success"> {{ data[exon][primer].s3c_F }} </td>
+                            {% elif data[exon][primer].s3c_F > '1' and data[exon][primer].s3c_F < '4' %}
+                              <td class="text-warning"> {{ data[exon][primer].s3c_F }} </td>
+                            {% elif data[exon][primer].s3c_F > '3' %}
+                              <td class="text-danger"> {{ data[exon][primer].s3c_F }} </td>
+                            {% endif %}
+                          </tr>
+                          <tr>
+                            <th scope='row'>Reverse</th>
+                            <td> {{ data[exon][primer].seq_R }} </td>
+                            <td> {{ data[exon][primer].len_R }} </td>
+                            <td> {{ data[exon][primer].tm_R }} </td>
+                            <td> {{ data[exon][primer].gc_R }} </td>
+                            {% if data[exon][primer].sc_R < '4' %}
+                              <td class="text-success"> {{ data[exon][primer].sc_R }} </td>
+                            {% elif data[exon][primer].sc_R > '3' and data[exon][primer].sc_R < '7' %}
+                              <td class="text-warning"> {{ data[exon][primer].sc_R }} </td>
+                            {% elif data[exon][primer].sc_R > '6' %}
+                              <td class="text-danger"> {{ data[exon][primer].sc_R }} </td>
+                            {% endif %}
+                            {% if data[exon][primer].s3c_R < '2' %}
+                              <td class="text-success"> {{ data[exon][primer].s3c_R }} </td>
+                            {% elif data[exon][primer].s3c_R > '1' and data[exon][primer].s3c_R < '4' %}
+                              <td class="text-warning"> {{ data[exon][primer].s3c_R }} </td>
+                            {% elif data[exon][primer].s3c_R > '3' %}
+                              <td class="text-danger"> {{ data[exon][primer].s3c_R }} </td>
+                            {% endif %}
+                          </tr>
+                          <tr>
+                            <th scope='row'>Product length</th>
+                            <td> {{ data[exon][primer].len_amp }} </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td colspan="2">
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      </div>
+                    </div>
+
+                  {% else %}
+
+                  <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvas_{{exon}}_{{primer.replace(' ', '')}}" aria-labelledby="offcanvas_{{exon}}_{{primer.replace(' ', '')}}_Label" style="height: 57.5%;">
+                    <div class="offcanvas-header pb-0">
+                      <button class="btn btn-outline-secondary border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ exon + '_Schemes'}}" aria-controls="offcanvasTop">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                        </svg>
+                      </button>
+                      <h5 id="offcanvas_{{exon}}_{{primer.replace(' ', '')}}_Label">{{ exon.replace('_', ' ') }} - {{ primer.replace('_', ' ') }}</h5>
+                      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body text-break text-start">
+                      <div class="pb-2 pt-0">
+                        {% if "dict_with_homopolymers" in data[exon][primer] %}
+                          <span>Longest homopolymers <span class="text-muted">(8-30 b. p.)</span>: </span>
+                        {% else %}
+                          <span class="text-success">Homopolymers (8-30 b. p.) was not found.</span>
+                        {% endif %}
+                        {% for homopolymer in data[exon][primer]["dict_with_homopolymers"] %}
+                          {% if homopolymer == 'A' %}
+                            <span class="mx-1 p-0 border-bottom border-warning border-3">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                          {% elif homopolymer == 'T' %}
+                            <span class="mx-1 p-0 border-bottom border-info border-3">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                          {% elif homopolymer == 'G' %}
+                            <span class="mx-1 p-0 border-bottom border-danger border-3">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                          {% elif homopolymer == 'C' %}
+                            <span class="mx-1 p-0 border-bottom border-primary border-3">{{homopolymer}}: {{ data[exon][primer]["dict_with_homopolymers"][homopolymer] }}</span>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      <div class=""><span class="text-muted fw-light">{{ data[exon][primer]["pre_primer"].seq }}</span><span class="text-dark"><span class="border border-primary rounded" style="background-color: #E8EAF6;">{{ data[exon][primer]["f_primer"].seq }}</span>{{ data[exon][primer]["first_gap"].seq|safe }}<span class="border border-success rounded" style="background-color: #E8F5E9;">{{ data[exon][primer]["exon"].seq|safe }}</span>{{ data[exon][primer]["second_gap"].seq|safe }}<span class="border border-danger rounded" style="background-color: #FFEBEE;">{{ data[exon][primer]["r_primer"].seq }}</span></span><span class="text-muted fw-light">{{ data[exon][primer]["post_primer"].seq }}</span>
+                      </div>
+                      <br>
+                      <br>
+                      <div class="my-1">
+                        <div class="row px-5 text-center">
+                          <div class="border border-primary bg-primary text-white text-center px-0" style="width: {{ data[exon][primer]['f_primer'].partial_percentage }}%; border-radius: 6px 0px 0px 6px;">{{ data[exon][primer]["f_primer"].len }}</div><div class="border bg-light text-center px-0" style="width: {{ data[exon][primer]['first_gap'].partial_percentage }}%;">{{ data[exon][primer]["first_gap"].len }}</div><div class="border border-success bg-success text-white text-center px-0" style="width: {{ data[exon][primer]['exon'].partial_percentage }}%;">{{ data[exon][primer]["exon"].len }}</div><div class="border bg-light text-center px-0" style="width: {{ data[exon][primer]['second_gap'].partial_percentage }}%;">{{ data[exon][primer]["second_gap"].len }}</div><div class="border border-danger bg-danger text-white text-center px-0" style="width: {{ data[exon][primer]['r_primer'].partial_percentage }}%; border-radius: 0px 6px 6px 0px;">{{ data[exon][primer]["r_primer"].len }}</div>
+                        </div>
+                        <div class="my-1 mx-4 text-center border-start border-bottom border-end">
+                          {{ data[exon][primer].len_amp }}
+                        </div>
+                        <br>
+                        <br>
+                        <br>
+                        <div class="text-center">
+                          <span class="p-1 mx-1 border border-primary rounded" style="background-color: #E8EAF6;">Forward primer</span>
+                          <span class="p-1 mx-1 border border-success rounded" style="background-color: #E8F5E9;">Exon</span>
+                          <span class="p-1 mx-1 border border-danger rounded" style="background-color: #FFEBEE;">Reverse primer</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                    <div class="carousel-item rounded" data-bs-interval="false">
+                      <div class="table-responsive text-nowrap">
+                      <table class='table mb-3 table-borderless table-sm text-start'>
+                        <thead class='border-top border-bottom'>
+                          <tr>
+                            <th scope='col'>
+                              <div class="btn-group-toggle" data-toggle="buttons">
+                                  <input type="checkbox" class="btn-check" utocomplete="off" name='taken_primers' value='primer_checkbox_{{gene}}.{{exon}}.{{primer}}' id='primer_checkbox_{{gene}}_{{exon}}_{{primer}}' form='results_table_form'>
+                                  <label class="btn btn-outline-success m-0 p-0 px-1 shadow-none" for="primer_checkbox_{{gene}}_{{exon}}_{{primer}}">
+                                    {{ primer.replace('_', ' ') }}
+                                  </label>
+                              </div>
+                            </th>
+                            <th scope='col'>
+                              {% if "dict_with_homopolymers" in data[exon][primer] %}
+                                <button class="btn btn-outline-warning m-0 p-0 px-1 shadow-none rounded text-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_{{exon}}_{{primer}}" aria-controls="offcanvas_{{exon}}_{{primer}}">Sequence (5'->3')</button>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill text-warning mx-0 px-0" viewBox="0 0 16 16">
+                                  <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+                                </svg>
+                              {% else %}
+                                <button class="btn btn-outline-dark m-0 p-0 px-1 shadow-none rounded" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas_{{exon}}_{{primer}}" aria-controls="offcanvas_{{exon}}_{{primer}}">Sequence (5'->3')</button>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill text-dark mx-0 px-0" viewBox="0 0 16 16">
+                                  <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+                                </svg>
+                              {% endif %}
+                            </th>
+                            <th scope='col'>Length</th>
+                            <th scope='col'>Tm</th>
+                            <th scope='col'>GC</th>
+                            <th scope='col'>S-C</th>
+                            <th scope='col'>S-3'-C</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope='row'>Forward</th>
+                            <td> {{ data[exon][primer].seq_F }} </td>
+                            <td> {{ data[exon][primer].len_F }} </td>
+                            <td> {{ data[exon][primer].tm_F }} </td>
+                            <td> {{ data[exon][primer].gc_F }} </td>
+                            {% if data[exon][primer].sc_F < '4' %}
+                              <td class="text-success"> {{ data[exon][primer].sc_F }} </td>
+                            {% elif data[exon][primer].sc_F > '3' and data[exon][primer].sc_F < '7' %}
+                              <td class="text-warning"> {{ data[exon][primer].sc_F }} </td>
+                            {% elif data[exon][primer].sc_F > '6' %}
+                              <td class="text-danger"> {{ data[exon][primer].sc_F }} </td>
+                            {% endif %}
+                            {% if data[exon][primer].s3c_F < '2' %}
+                              <td class="text-success"> {{ data[exon][primer].s3c_F }} </td>
+                            {% elif data[exon][primer].s3c_F > '1' and data[exon][primer].s3c_F < '4' %}
+                              <td class="text-warning"> {{ data[exon][primer].s3c_F }} </td>
+                            {% elif data[exon][primer].s3c_F > '3' %}
+                              <td class="text-danger"> {{ data[exon][primer].s3c_F }} </td>
+                            {% endif %}
+                          </tr>
+                          <tr>
+                            <th scope='row'>Reverse</th>
+                            <td> {{ data[exon][primer].seq_R }} </td>
+                            <td> {{ data[exon][primer].len_R }} </td>
+                            <td> {{ data[exon][primer].tm_R }} </td>
+                            <td> {{ data[exon][primer].gc_R }} </td>
+                            {% if data[exon][primer].sc_R < '4' %}
+                              <td class="text-success"> {{ data[exon][primer].sc_R }} </td>
+                            {% elif data[exon][primer].sc_R > '3' and data[exon][primer].sc_R < '7' %}
+                              <td class="text-warning"> {{ data[exon][primer].sc_R }} </td>
+                            {% elif data[exon][primer].sc_R > '6' %}
+                              <td class="text-danger"> {{ data[exon][primer].sc_R }} </td>
+                            {% endif %}
+                            {% if data[exon][primer].s3c_R < '2' %}
+                              <td class="text-success"> {{ data[exon][primer].s3c_R }} </td>
+                            {% elif data[exon][primer].s3c_R > '1' and data[exon][primer].s3c_R < '4' %}
+                              <td class="text-warning"> {{ data[exon][primer].s3c_R }} </td>
+                            {% elif data[exon][primer].s3c_R > '3' %}
+                              <td class="text-danger"> {{ data[exon][primer].s3c_R }} </td>
+                            {% endif %}
+                          </tr>
+                          <tr>
+                            <th scope='row'>Product length</th>
+                            <td> {{ data[exon][primer].len_amp }} </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+            </div>
+            {% if 'Primer_pair_1 ' in data[exon] and not 'specific_checker' in data[exon] and 'Primer_pair_2 ' in data[exon] %}
+              <button class="carousel-control-next" type="button" data-bs-target="#{{ exon }}_slide" data-bs-slide="next" style='width: 5%;'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-right text-success" viewBox="0 0 16 16">
+                  <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                </svg>
+                <span class="visually-hidden">Next</span>
+              </button>
+            {% elif 'Primer_pair_1 ' in data[exon] and 'specific_checker' in data[exon] and 'Primer_pair_2 ' in data[exon] %}
+              <button class="carousel-control-next" type="button" data-bs-target="#{{ exon }}_slide" data-bs-slide="next" style='width: 5%;'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-caret-right text-warning" viewBox="0 0 16 16">
+                  <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                </svg>
+                <span class="visually-hidden">Next</span>
+              </button>
+            {% endif %}
+            {% if 'Primer_pair_2 ' in data[exon] %}
+              <button class="carousel-control-prev mt-5" type="button" data-bs-target="#{{ exon }}_slide" data-bs-slide="prev" style='width: 5%;'>
+                <span class="visually-hidden">Prev</span>
+              </button>
+            {% endif %}
+          </div>
+            {% if 'primer_blast_link' in data[exon] %}
+            <div class="text-end px-2">
+              <a href="{{ data[exon].primer_blast_link }}" target='_blank' class="text-right" role="button" style='text-decoration: none'>To Primer-BLAST</a>
+            </div>
+            {% endif %}
+          {% else %}
+          <div>
+            {% if not 'primer_blast_link' in data[exon] %}
+              <p class='text-center border-top pt-3 mb-1'>Primers with given params were not found.</p>
+              <p class='text-center mb-3'>Try to change Primers-search distances in Advanced settings by decreasing or increasing them.</p>
+            {% elif 'primer_blast_link' in data[exon] %}
+              <p class='text-center border-top pt-3 mb-1'>Primers with given params were not found.</p>
+              <p class='text-center mb-0'>Try to change Primers-search distances in Advanced settings by decreasing or increasing them.</p>
+            {% endif %}
+            {% if 'waiting_time_is_over' in data[exon] %}
+              <p class='text-center p-0 mb-0'>Server response timed out. Please try again.</p>
+            {% endif %}
+            {% if 'wrong_params' in data[exon] %}
+              <p class='text-center p-0 mb-3'>Primers matching the search parameters were not found.</p>
+            {% endif %}
+            {% if 'primers_checker' in data[exon] and not 'Primer_pair_1 ' in data[exon] %}
+              <p class='text-center p-0 mb-0'>All designed primers contain SNPs.</p>
+            {% endif %}
+          </div>
+            {% if 'primer_blast_link' in data[exon] %}
+              <div class="text-end px-2">
+                <a href="{{ data[exon].primer_blast_link }}" target='_blank' class="text-right" role="button" style='text-decoration: none'>To Primer-BLAST</a>
+              </div>
+            {% endif %}
+          {% endif %}
+
+        </div>
+
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-lg-4 col-md-12">
+        <div class="sticky-top p-0 border mb-3 bg-white shadow" style="top: 13%; border-radius: 15px 15px 15px 15px;">
+          <button type="submit" class="btn btn-success w-100 mb-1 py-3 px-2 btn-lg border-0" style='border-radius: 15px 15px 0px 0px;' form='results_table_form'>Show taken primer pairs as a table</button>
+          <div class="text-dark px-3" style="border-radius: 0px 0px 15px 15px;">
+            <div class="form-check form-switch ml-3 mt-2">
+              <input type="checkbox" class="form-check-input" id="customSwitch3" defval='checked' disabled>
+              <label class="form-check-label" for="customSwitch3">Show all params</label >
+            </div>
+            <div class="form-check form-switch ml-3">
+              <input type="checkbox" class="form-check-input" id="customSwitch1" active checked disabled>
+              <label class="form-check-label" for="customSwitch1">Auto-naming</label>
+            </div>
+            <div class="form-check form-switch ml-3 mb-3">
+              <input type="checkbox" class="form-check-input" id="customSwitch2" active checked disabled>
+              <label class="form-check-label" for="customSwitch2">Auto-concentration</label>
+            </div>
+          </div>
+        </div>
+
+      <div class="border p-0 mb-3 shadow" style="border-radius: 15px 15px 15px 15px;" hidden>
+      <button class="btn btn-sm border-0 text-center p-3 w-100 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample3" aria-expanded="false" aria-controls="collapseExample3" style="border-radius: 15px 15px 15px 15px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down" viewBox="0 0 16 16">
+          <path d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659l4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z"/>
+        </svg>
+        Info
+      </button>
+
+        <div class="collapse text-center w-100 " id="collapseExample3" style="border-radius: 15px;">
+          <div class="card card-body border-0 bg-daanger pt-1 text-dark" style="border-radius: 15px;">
+            <div class="border border-success mb-2" style="border-radius: 15px 15px 15px 15px;">
+              Primers are specific
+            </div>
+            <div class="border border-warning mb-2" style="border-radius: 15px 15px 15px 15px;">
+              Primers may not be specific
+            </div>
+            <div class="border border-danger mb-2" style="border-radius: 15px 15px 15px 15px;">
+              Primers were not found
+            </div>
+            <div class="border bg-light border-0 mt-2 text-left px-3 py-1" style="border-radius: 15px 15px 15px 15px;">
+              <p class="mb-2 p-0"><span class="font-weight-bold">S-C (Self-complementarity)</span> score: Pick primers which have a low self-complementarity score, as given in the NCBI Primer-BLAST detailed primer report. Self-complementarity is the likelihood that the primer will bind to itself and to the other primer in the pair. Max - 8.00.</p>
+              <p class="mb-2-0 p-0"><span class="font-weight-bold">S-3'-C (Self 3’-complementarity)</span> score: Pick primers which have a low self 3’-complementarity score, as given in the NCBI Primer-BLAST detailed primer report. Self 3’-complementarity is the likelihood that the primer will bind to itself and to the other primer in the pair at the 3’ end. Max - 4.00.</p>
+              <p class="m-0 p-0"><span class="font-weight-bold">High scores are a good predictor of primer dimer formation.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sticky-top border shadow p-0 bg-white" style="top: 34.5%; border-radius: 15px 15px 15px 15px;">
+      <button class="btn btn-sm border-0 text-center p-3 w-100 shadow-none bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample2" aria-expanded="false" aria-controls="collapseExample2" style="border-radius: 15px 15px 15px 15px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down" viewBox="0 0 16 16">
+          <path d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659l4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z"/>
+        </svg>
+        Reverse complement
+      </button>
+
+      <form action="#" name="form" id="form" method="post">
+      </form>
+      <div class="collapse text-center w-100" id="collapseExample2" style="border-radius: 0px 0px 15px 15px;">
+        <div class="card card-body border-0 px-3 pt-1 pb-0">
+          <textarea name="seq_for_rc" form='form' rows="5" cols="80" style="color: #6C757D; border-color: #CED4DA" placeholder=" >Paste sequence" oninput='get_len_seq()'></textarea>
+          <div class="input-group mb-3">
+            <p class="text-start m-0" style='color: #6C757D; width: 60%;' id='get_gc_content'>GC: 0</p>
+            <p class="text-end m-0" style='color: #6C757D; width: 40%;' id='get_len_seq_1'>Length: 0</p>
+          </div>
+        </div>
+        <button class="btn btn-sm m-0 mx-2 border-0 bg-primary" type="button" style="color: white; width: 200px; border-radius: 15px;" onclick='get_reverse_complement()'>
+            Reverse complement
+        </button>
+        <div class="card card-body border-0 mt-4 px-3 py-0">
+          <textarea rows="5" cols="80" style="color: #6C757D; border-color: #CED4DA" id='response_textarea' readonly></textarea>
+        </div>
+        <br>
+      </div>
+      </div>
+
+      <script>
+        $("#dna_loading").hide();
+      </script>
+
+      <script>
+              function get_len_seq() {
+                  $.ajax({
+                      type: "POST",
+                      url: "/get_len_seq",
+                      type: 'POST',
+                      data: $('form').serialize(),
+                      success: function(response) {
+                          $('#get_len_seq_1').html(response)
+                          console.log(response);
+                      },
+                      error: function(error) {
+                          console.log(error);
+                      }
+                  });
+                  $.ajax({
+                      type: "POST",
+                      url: "/get_gc_content_page",
+                      type: 'POST',
+                      data: $('form').serialize(),
+                      success: function(response) {
+                          $('#get_gc_content').html(response)
+                          console.log(response);
+                      },
+                      error: function(error) {
+                          console.log(error);
+                      }
+                  });
+              }
+      </script>
+
+      <script>
+                  function get_reverse_complement() {
+                      $.ajax({
+                          type: "POST",
+                          url: "/get_reverse_complement",
+                          type: 'POST',
+                          data: $('form').serialize(),
+                          success: function(response) {
+                              $('#response_textarea').html(response)
+                              console.log(response);
+                          },
+                          error: function(error) {
+                              console.log(error);
+                          }
+                      });
+                  }
+      </script>
+
+    </div>
+  </div>
+</div>
+
+<div class="d-block d-lg-none">
+  <br>
+  <br>
+</div>
+
+</div>

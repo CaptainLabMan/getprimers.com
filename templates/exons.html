@@ -1,0 +1,14 @@
+<h5 class='border border-bottom-0 m-0 pl-3 text-dark bg-white border-0 text-left' style="padding: 1.7%; border-radius: 6px 6px 0px 0px; width: 100%;">Select exons</h5>
+  <div class="btn-group-toggle border-top border-bottom py-2 m-0 bg-white" style="padding: 1%" data-toggle="buttons">
+    {% for exon in data %}
+      <label class="btn btn-outline-secondary text-center px-0" style='width: 5.5%; margin: 0.5%;'>
+        <input type="checkbox" class="btn-check" autocomplete="off" name='exon' value='{{ exon }}'>{{ exon }}
+      </label>
+    {% endfor %}
+  </div>
+
+<script>
+  $("#disabled_button").hide();
+  $("#active_button").show();
+  $("#loading2").hide();
+</script>

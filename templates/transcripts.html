@@ -1,0 +1,42 @@
+                <div class="input-group w-100 border-bottom bg-white">
+                  <select onchange="get_exons();" class="form-select form-select-lg border-right shadow-none rounded-0" style="border: 0px;" name='transcript'>
+                    <option>Select transcript</option>
+                    {% for transcript in data %}
+                    <option value='{{ transcript }}'>{{ transcript }}</option>
+                    {% endfor %}
+                  </select>
+                  {% if GCS_data == 'GRCh37' %}
+                    <a class="btn btn-lg btn-outline-light border-0 text-center p-0 mr-0 rounded-0 shadow-none" target='_blank' href="https://grch37.ensembl.org/{{ SPECIES }}/Gene/Summary?db=core;g={{ gene_id }};" role="button" style='width: 60px;;'>
+                      <img src="/static/images/enslogo.png" alt="Ensembl" width="42px" height="42px" loading="lazy" class="mt-1">
+                    </a>
+                  {% elif GCS_data == 'GRCh38' %}
+                  <a class="btn btn-lg btn-outline-light border-0 text-center p-0 mr-0 rounded-0 shadow-none" target='_blank' href="https://www.ensembl.org/{{ SPECIES }}/Gene/Summary?db=core;g={{ gene_id }};" role="button" style='width: 60px;;'>
+                    <img src="/static/images/enslogo.png" alt="Ensembl" width="42px" height="42px" loading="lazy" class="mt-1">
+                  </a>
+                  {% endif %}
+                </div>
+
+                <div id="exons_R1_2"></div>
+
+                <script type="text/javascript">
+                  $("#loading2").hide();
+                </script>
+
+                <script>
+                        function get_exons() {
+                            $.ajax({
+                                type: "POST",
+                                url: "/get_exons",
+                                data: $('form').serialize(),
+                                type: 'POST',
+                                success: function(response) {
+                                    $('#exons_R1_2').html(response)
+                                    console.log(response);
+                                },
+                                error: function(error) {
+                                    console.log(error);
+                                }
+                            });
+                            $("#loading2").show();
+                        }
+                    </script>

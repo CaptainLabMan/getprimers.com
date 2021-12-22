@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <header class="navbar navbar-expand-lg navbar-dark p-0 m-0 bg-dark d-none d-lg-block" style="background-color: #FFFFFF;">
+      <div class='container-fluid p-1'>
+        <a class="navbar-brand p-0 py-4" href="/">
+          <img src="https://svgshare.com/i/Stf.svg" width="340" height="50" class="d-inline-block align-top m-0" alt="GetPrimers" loading="lazy">
+        </a>
+        <ul class="navbar-nav">
+          <li class="ml-2">
+            <a href="/reverse_complement" target='_blank' class='px-2 text-right m-0' style='color: #FFFFFF; text-decoration: none'>REVERSE COMPLEMENT</a>
+          </li>
+          <li class="ml-2">
+            <a href="/about" target='_blank' class='px-2 text-right m-0' style='color: #FFFFFF; text-decoration: none'>ABOUT</a>
+          </li>
+        </ul>
+      </div>
+    </header>
+
+    <header class="navbar navbar-expand-lg navbar-dark p-0 m-0 bg-dark d-block d-lg-none" style="background-color: #FFFFFF;">
+      <div class='container-fluid p-1'>
+        <a class="navbar-brand p-0 py-4" href="/">
+          <img src="https://svgshare.com/i/Stf.svg" width="340" height="50" class="d-inline-block align-top m-0" alt="GetPrimers" loading="lazy">
+        </a>
+
+        <ul class="navbar-nav">
+          <div class="btn-group" role="group">
+          <li class="m-2">
+            <a href="/reverse_complement" target='_blank' class='btn btn-dark p-2 text-right m-0 border rounded' role="button" style='color: #FFFFFF;'>RC</a>
+          </li>
+          <li class="m-2">
+            <a href="/about" target='_blank' class='btn btn-dark p-2 text-right m-0 border rounded' role="button" style='color: #FFFFFF;'>AB</a>
+          </li>
+          </div>
+        </ul>
+      </div>
+    </header>
+
+      <br>
+
+      <div class='container-md'>
+        <div class="row">
+          <div class="col-lg-8 col-md-12">
+            {% block main_cont %}
+            {% endblock %}
+          </div>
+
+          <div class="d-block d-lg-none">
+            <br>
+          </div>
+
+          <div class="col-lg-4 col-md-12">
+            {% block side_cont %}
+            {% endblock %}
+          </div>
+        </div>
+      </div>
+
+      <div class="d-block d-lg-none">
+        <br>
+        <br>
+        <br>
+        <br>
+      </div>
+
+  </body>
+
+  <footer class="fixed-bottom">
+    <div class="text-end">
+      <a href="/reverse_complement" target='_blank'>
+        <img src="https://svgshare.com/i/ZQy.svg" width="32" height="32" class='btn p-0 text-right mx-2 mb-2 border text-secondary bg-primary' alt="GetPrimers" loading="lazy">
+      </a>
+    </div>
+    <div class="d-lg-block d-none text-secondary border-top py-1 text-right" style="background-color: #FFFFFF;">
+      <div class="row">
+        <div class="col-4 text-start px-4">
+          <span>Andrey Nekrasov ©</span>
+        </div>
+        <div class="col-4 text-center">
+          <span><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383l-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
+            </svg> captainlabman@gmail.com</span>
+        </div>
+        <div class="col-4 text-end px-4">
+          v.17.09 2021
+        </div>
+      </div>
+    </div>
+
+      <div class="d-block d-lg-none text-secondary border-top py-1 text-center" style="background-color: #FFFFFF;">
+        <div class="row">
+          <div class="col-12">
+            <span>Andrey Nekrasov ©</span>
+          </div>
+          <div class="col-12">
+            <span><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383l-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
+              </svg> captainlabman@gmail.com</span>
+          </div>
+          <div class="col-12">
+            v.17.09 2021
+          </div>
+        </div>
+      </div>
+  </footer>
+</html>

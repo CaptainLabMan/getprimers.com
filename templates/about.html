@@ -1,0 +1,17 @@
+{% extends 'clear_base.html' %}
+
+{% block title %}
+  GP About
+{% endblock %}
+
+{% block main_block %}
+<div class="container-lg">
+  <div class="shadow border p-4 text-dark" style='background-color: #FFFFFF; color: #6C757D; border-radius: 15px;'>
+    <p class="mb-4 p-3 bg-light" style="border-radius: 15px;"><span class="font-weight-bold">GetPrimers</span> allows you to quickly and easily design primers for PCR of any exons of genes with the ability to select primers taking into account polymorphisms.</p>
+    <p class='mb-2 ml-3'>GetPrimers uses:</p>
+    <p class='border-left p-1 mb-2 ml-3'><a href="https://www.ensembl.org/index.html">Ensembl</a> as a source of nucleotide sequences and SNPs' positions.</p>
+    <p class='mb-2 ml-3'>and</p>
+    <p class='border-left p-1 ml-3'><a href="https://www.ncbi.nlm.nih.gov/tools/primer-blast/">Primer-BLAST</a> to primers design.</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'main_index.html' %}
+{% block menu %}
+<input type="text" name="gp_request_id" value="{{ gp_request_id }}" form='form' hidden>
+
+<div class="col-xxl-3 col-lg-4 col-md-12">
+
+  <div class="row py-2 g-2">
+    <div class="col-lg-3 col-md-12">
+      <a class="btn btn-warning btn-sm shadow-none w-100" href="/GRCh37" role="button" style='border-radius: 10px;'>GRCh37</a>
+    </div>
+    <div class="col-lg-3 col-md-12">
+      <a class="btn btn-outline-secondary border-0 btn-sm ml-0 shadow-none w-100" href="/GRCh38" role="button" style='border-radius: 10px;'>GRCh38</a>
+    </div>
+    <div class="col-lg-6 col-md-12">
+      <select class="form-select form-select-sm border border-secondary bg-white shadow-none w-100" name='SPECIES' form='form' style='background-color: #E8F0FD; border-radius: 10px;'>
+        <option value="Homo_sapiens">Human</option>
+      </select>
+    </div>
+      <input type="hidden" name="GCS" value="GRCh37" form='form'>
+    </div>
+
+</div>
+
+{% endblock %}
