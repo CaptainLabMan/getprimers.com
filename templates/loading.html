@@ -69,17 +69,6 @@
                         console.log(error);
                     }
                 });
-                $.ajax({
-                    type: "POST",
-                    url: "/get_pb_server_status",
-                    success: function(response) {
-                        $('#server_status').html(response)
-                        console.log(response);
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
                   $.ajax({
                       type: "POST",
                       url: "/statuses",

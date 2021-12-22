@@ -6,15 +6,77 @@ def state_statuses(statuses_dict, exon, gp_request_id, state):
     with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
         json.dump(statuses_dict, statuses_file)
 
-
-def cycreq(req):
-    import requests, urllib3
+def cyc_post_req_for_ens(server, link, headers, data):
+    import requests, urllib3, time
+    req_status = False
     try:
-        request = req
+        request = requests.post(server+link, data=data, headers=headers, timeout=15.0)
     except Exception:
-        print('ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR-ERROR')
-        while request.ok != True:
-            request
+        print('An exception 1 occured in Ensembl post request')
+        while req_status != True:
+            time.sleep(2.5)
+            try:
+                request = requests.post(server+link, data=data, headers=headers, timeout=15.0)
+                req_status = True
+            except Exception:
+                print('An exception 2 occured in Ensembl post request')
+    return request
+
+
+def cyc_post_req(link, data):
+    import requests, urllib3, time
+    req_status = False
+    try:
+        request = requests.post(link, data=data, timeout=30.0)
+    except Exception:
+        print('An exception 1 occured in Primer-BLAST post request')
+        while req_status != True:
+            time.sleep(2.5)
+            try:
+                request = requests.post(link, data=data, timeout=30.0)
+                print('Попытка запроса 2')
+                req_status = True
+            except Exception:
+                print('An exception 2 occured in Primer-BLAST post request')
+    return request
+
+
+def cyc_get_req_for_pb(link):
+    import requests, urllib3, time
+    req_status = False
+    try:
+        request = requests.get(link, timeout=15.0)
+    except Exception:
+        print('An exception 1 occured in Primer-BLAST get request')
+        counter = 1
+        while req_status != True:
+            time.sleep(2.5)
+            counter += 1
+            try:
+                request = requests.get(link, timeout=15.0)
+                print('Попытка запроса {}'.format(counter))
+                req_status = True
+            except Exception:
+                print('An exception 2 occured in Primer-BLAST get request')
+    print('\nDONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_DONE_\n')
+    print(request)
+    return request
+
+
+def cyc_get_req_for_ens(server, link, headers):
+    import requests, urllib3, time
+    req_status = False
+    try:
+        request = requests.get(server+link, headers=headers, timeout=15.0)
+    except Exception:
+        print('An exception 1 occured in Ensembl request')
+        while req_status != True:
+            time.sleep(2.5)
+            try:
+                request = requests.get(server+link, headers=headers, timeout=15.0)
+                req_status = True
+            except Exception:
+                print('An exception 2 occured in Ensembl request')
     return request
 
 
@@ -27,8 +89,10 @@ def get_gene_id(SPECIES, gene, GCS):
         server = "https://rest.ensembl.org"
 
     gene_path = '/xrefs/symbol/{}/{}?'.format(SPECIES, gene)
+    headers={"Content-Type" : "application/json"}
     #get_gene_id = requests.get(server+gene_path, headers={ "Content-Type" : "application/json"})
-    get_gene_id = cycreq(requests.get(server+gene_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+    #get_gene_id = cycreq(requests.get(server+gene_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+    get_gene_id = cyc_get_req_for_ens(server, gene_path, headers)
 
     if not get_gene_id.ok:
       get_gene_id.raise_for_status()
@@ -42,8 +106,10 @@ def get_gene_id(SPECIES, gene, GCS):
     for item in get_gene_id_decoded:
         if item['type'] == 'gene':
             gene_check_info_path = "/lookup/id/{}?".format(item['id'])
+            headers={"Content-Type" : "application/json"}
             #gene_check_info_response = requests.get(server+gene_check_info_path, headers={ "Content-Type" : "application/json"})
-            gene_check_info_response = cycreq(requests.get(server+gene_check_info_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+            #gene_check_info_response = cycreq(requests.get(server+gene_check_info_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+            gene_check_info_response = cyc_get_req_for_ens(server, gene_check_info_path, headers)
             check_gene_name = gene_check_info_response.json()
             if check_gene_name['display_name'].upper() == gene.upper():
                 gene_id = item['id']
@@ -69,8 +135,10 @@ def get_transcripts(SPECIES, gene, GCS):
         server = "https://rest.ensembl.org"
 
     gene_path = '/xrefs/symbol/{}/{}?'.format(SPECIES, gene)
+    headers={"Content-Type" : "application/json"}
     #get_gene_id = requests.get(server+gene_path, headers={ "Content-Type" : "application/json"})
-    get_gene_id = cycreq(requests.get(server+gene_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+    #get_gene_id = cycreq(requests.get(server+gene_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+    get_gene_id = cyc_get_req_for_ens(server, gene_path, headers)
 
     if not get_gene_id.ok:
       get_gene_id.raise_for_status()
@@ -84,8 +152,10 @@ def get_transcripts(SPECIES, gene, GCS):
     for item in get_gene_id_decoded:
         if item['type'] == 'gene':
             gene_check_info_path = "/lookup/id/{}?".format(item['id'])
+            headers={"Content-Type" : "application/json"}
             #gene_check_info_response = requests.get(server+gene_check_info_path, headers={ "Content-Type" : "application/json"})
-            gene_check_info_response = cycreq(requests.get(server+gene_check_info_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+            #gene_check_info_response = cycreq(requests.get(server+gene_check_info_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+            gene_check_info_response = cyc_get_req_for_ens(server, gene_check_info_path, headers)
             check_gene_name = gene_check_info_response.json()
             print('Found gene name - {}'.format(check_gene_name['display_name'].upper()))
             print('{} gene ID - {}\n'.format(check_gene_name['display_name'].upper(), item['id']))
@@ -98,8 +168,10 @@ def get_transcripts(SPECIES, gene, GCS):
 
     # Эта чатсь может доставать инфу по транскриптам в зависимости от features
     transcripts_path = "/overlap/id/{}?feature=transcript".format(gene_id)
+    headers={"Content-Type" : "application/json"}
     #get_transcripts_id = requests.get(server+transcripts_path, headers={ "Content-Type" : "application/json"})
-    get_transcripts_id = cycreq(requests.get(server+transcripts_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+    #get_transcripts_id = cycreq(requests.get(server+transcripts_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+    get_transcripts_id = cyc_get_req_for_ens(server, transcripts_path, headers)
 
     get_transcripts_id_decoded = get_transcripts_id.json()
 
@@ -114,8 +186,10 @@ def get_transcripts(SPECIES, gene, GCS):
     #Для увеличения скорости работы, можно сделать несколько потоков (только вот скорее всего сервера энсембла не позволят делать так много запросов практически одномоментно).
     for transcript_id_element in transcripts_list:
         ref_seq_path = "/xrefs/id/{}?".format(transcript_id_element)
+        headers={"Content-Type" : "application/json"}
         #get_ref_seq = requests.get(server+ref_seq_path, headers={ "Content-Type" : "application/json"})
-        get_ref_seq = cycreq(requests.get(server+ref_seq_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+        #get_ref_seq = cycreq(requests.get(server+ref_seq_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+        get_ref_seq = cyc_get_req_for_ens(server, ref_seq_path, headers)
 
         get_ref_seq_decoded = get_ref_seq.json()
         for dict_element in get_ref_seq_decoded:
@@ -146,8 +220,10 @@ def get_exons(file_name_pb, transcript_id, GCS):
 
     # Эта чатсь может доставать инфу по экзонам в зависимости от features
     exons_path = "/overlap/id/{}?feature=exon".format(transcript_id)
+    headers={"Content-Type" : "application/json"}
     #get_exons = requests.get(server+exons_path, headers={ "Content-Type" : "application/json"})
-    get_exons = cycreq(requests.get(server+exons_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+    #get_exons = cycreq(requests.get(server+exons_path, headers={ "Content-Type" : "application/json"}, timeout=None))
+    get_exons = cyc_get_req_for_ens(server, exons_path, headers)
 
     get_exons_decoded = get_exons.json()
 
@@ -260,7 +336,11 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
 
     result_dict = {}
+
     statuses_dict = {}
+    statuses_file_name = 'status_of_{}'.format(gp_request_id)
+    with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
+        json.dump('{}', statuses_file)
 
     def get_get_primers(element, result_dict, statuses_dict, gp_request_id):
 
@@ -276,14 +356,18 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
             begin_of_search_seq = int(dict_exons[element]['start']) - R_SEARCH_DISTANCE_PB
             end_of_search_seq = int(dict_exons[element]['end']) + F_SEARCH_DISTANCE_PB
         exon_and_distance_path = "/sequence/region/{}/{}:{}..{}:{}?expand_3prime=0;expand_5prime=0".format(SPECIES, chromosome, begin_of_search_seq, end_of_search_seq, strand)
+        headers={"Content-Type" : "text/plain"}
         #get_exon_and_distance = requests.get(server+exon_and_distance_path, headers={ "Content-Type" : "text/plain"})
-        get_exon_and_distance = cycreq(requests.get(server+exon_and_distance_path, headers={ "Content-Type" : "text/plain"}, timeout=None))
+        #get_exon_and_distance = cycreq(requests.get(server+exon_and_distance_path, headers={ "Content-Type" : "text/plain"}, timeout=None))
+        get_exon_and_distance = cyc_get_req_for_ens(server, exon_and_distance_path, headers)
 
         #Здесь часть похожая на часть сверху, по получению последовательности, но это последовательность строго самого кэзона (+UTR если он есть).
         #Нужна эта часть для того чтобы выделить большими буквами экзон, а маленькими интроны в последовательности.
         exon_only_path = "/sequence/region/{}/{}:{}..{}:{}?expand_3prime=0;expand_5prime=0".format(SPECIES, chromosome, int(dict_exons[element]['start']), int(dict_exons[element]['end']), strand)
+        headers={"Content-Type" : "text/plain"}
         #get_exon_only = requests.get(server+exon_only_path, headers={ "Content-Type" : "text/plain"})
-        get_exon_only = cycreq(requests.get(server+exon_only_path, headers={ "Content-Type" : "text/plain"}, timeout=None))
+        #get_exon_only = cycreq(requests.get(server+exon_only_path, headers={ "Content-Type" : "text/plain"}, timeout=None))
+        get_exon_only = cyc_get_req_for_ens(server, exon_only_path, headers)
         get_exon_only = get_exon_only.text
 
         #Строки ниже необходимы просто для вывода инфы о дистанции для поиска праймеров в консоль.
@@ -333,7 +417,6 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         #refseq_mrna
         #PRIMERDB/genome_selected_species
         url = 'https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi'
-        headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
         data = {
             'INPUT_SEQUENCE': seq_for_pb,
             'PRIMER5_START': '1',
@@ -369,7 +452,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         }
 
         #r = requests.post(url, data=data)
-        r = cycreq(requests.post(url, data=data, timeout=None, headers=headers))
+        r = cyc_post_req(url, data)
         headers_pb = r.headers
 
         state_statuses(statuses_dict, element, gp_request_id, 'request_to_pb')
@@ -382,7 +465,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         #далее будет использована во втором запросе для получения хтмл страницы со специфиечскими праймерами.
         pb_link_checker = '' # Нужно для добавления ссылки если она есть
         r_timeout = 0
-        max_waiting_time_for_pb = 600
+        max_waiting_time_for_pb = 1200
 
         def pb_timeout_checker(pb_response):
             #  Your request is waiting to be processed...our system has temporarily reached full capacity and the wait time can be much longer than usual.
@@ -403,7 +486,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                 print('\nPrimer_BLAST link for {}:'.format(exon_number_for_thread))
                 print(pb_specific_link)
                 #r2 = requests.get(pb_specific_link)
-                r2 = cycreq(requests.get(pb_specific_link, timeout=None, headers=headers))
+                r2 = cyc_get_req_for_pb(pb_specific_link)
                 r_timeout = 0
                 count_of_requests = 1
                 while q in r2.text and r_timeout < max_waiting_time_for_pb:
@@ -411,7 +494,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     time.sleep(15)
                     r_timeout += 15
                     #r2 = requests.get(pb_specific_link)
-                    r2 = cycreq(requests.get(pb_specific_link, timeout=None, headers=headers))
+                    r2 = cyc_get_req_for_pb(pb_specific_link)
                     count_of_requests += 1
                     print('\nRequest {} for {}'.format(count_of_requests, exon_number_for_thread))
                     print('Time has pass - {} sec. Max waiting time - {} sec'.format(r_timeout, max_waiting_time_for_pb))
@@ -447,21 +530,25 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
             wrong_params = ''
             while pb_response_status != 'primers_is_ready' and r_timeout < max_waiting_time_for_pb:
                 max_waiting_time_for_pb = pb_timeout_checker(r.text)
-                time.sleep(5)
                 if pb_response_status == 'primers_design_in_progress':
+                    time.sleep(5)
                     pb_link_checker = 'checked'
                     pb_specific_link = '{}'.format(r.headers['NCBI-RCGI-RetryURL'])
                     print(pb_specific_link)
                     #r = requests.get(pb_specific_link)
-                    r = cycreq(requests.get(pb_specific_link, timeout=None, headers=headers))
+                    print('Start primers_design_in_progress_for_{}'.format(element))
+                    r = cyc_get_req_for_pb(pb_specific_link)
                     pb_response_status = pb_response_status_f(r)
+                    print('End primers_design_in_progress_for_{}'.format(element))
                 elif pb_response_status == 'pb_redirect':
                     pb_link_checker = 'checked' # Нужно для добавления ссылки если она есть
                     pb_specific_link = '{}'.format(r.headers['NCBI-RCGI-RetryURL'])
                     print(pb_specific_link)
                     #r = requests.get(pb_specific_link)
-                    r = cycreq(requests.get(pb_specific_link, timeout=None, headers=headers))
+                    print('Start pb_redirect')
+                    r = cyc_get_req_for_pb(pb_specific_link)
                     pb_response_status = pb_response_status_f(r)
+                    print('End pb_redirect')
                 elif pb_response_status == 'highly_similar_seq':
                     similar_genes = BeautifulSoup(r.text, 'html.parser')
                     similar_genes_items = similar_genes.find_all('table')
@@ -564,10 +651,13 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
                     url = 'https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi'
                     #r = requests.post(url, data=all_inputs_dict)
-                    r = cycreq(requests.post(url, data=all_inputs_dict, timeout=None))
+                    #r = cycreq(requests.post(url, data=all_inputs_dict, timeout=None))
+                    print('Start highly_similar_seq')
+                    r = cyc_post_req(url, all_inputs_dict)
                     #print(r.text)
                     #print(r.headers)
                     pb_response_status = pb_response_status_f(r)
+                    print('End highly_similar_seq')
                 else:
                     print('ELSE')
                     break
@@ -748,8 +838,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
                     #Заопрос возвращающий всю инфу по данному диапазону, включая все варианты.
                     ext = "/overlap/region/{}/{}?feature=variation;".format(SPECIES, genome_primer_F_position)
+                    headers={"Content-Type" : "application/json"}
                     #dict_of_variants_info = requests.get(server+ext, headers={ "Content-Type" : "application/json"})
-                    dict_of_variants_info = cycreq(requests.get(server+ext, headers={ "Content-Type" : "application/json"}, timeout=None))
+                    #dict_of_variants_info = cycreq(requests.get(server+ext, headers={ "Content-Type" : "application/json"}, timeout=None))
+                    dict_of_variants_info = cyc_get_req_for_ens(server, ext, headers)
 
                     if not dict_of_variants_info.ok:
                       dict_of_variants_info.raise_for_status()
@@ -771,7 +863,8 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     ext = "/variation/{}".format(SPECIES)
                     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
                     #variation_info = requests.post(server+ext, headers=headers, data=dict_of_variants)
-                    variation_info = cycreq(requests.post(server+ext, headers=headers, data=dict_of_variants, timeout=None))
+                    #variation_info = cycreq(requests.post(server+ext, headers=headers, data=dict_of_variants, timeout=None))
+                    variation_info = cyc_post_req_for_ens(server, ext, headers, dict_of_variants)
 
                     if not variation_info.ok:
                       variation_info.raise_for_status()
@@ -813,8 +906,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
                     #Заопрос возвращающий всю инфу по данному диапазону, включая все варианты.
                     ext = "/overlap/region/{}/{}?feature=variation;".format(SPECIES, genome_primer_R_position)
+                    headers={"Content-Type" : "application/json"}
                     #dict_of_variants_info = requests.get(server+ext, headers={ "Content-Type" : "application/json"})
-                    dict_of_variants_info = cycreq(requests.get(server+ext, headers={ "Content-Type" : "application/json"}, timeout=None))
+                    #dict_of_variants_info = cycreq(requests.get(server+ext, headers={ "Content-Type" : "application/json"}, timeout=None))
+                    dict_of_variants_info = cyc_get_req_for_ens(server, ext, headers)
 
                     if not dict_of_variants_info.ok:
                       dict_of_variants_info.raise_for_status()
@@ -835,7 +930,8 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     ext = "/variation/{}".format(SPECIES)
                     headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
                     #variation_info = requests.post(server+ext, headers=headers, data=dict_of_variants)
-                    variation_info = cycreq(requests.post(server+ext, headers=headers, data=dict_of_variants, timeout=None))
+                    #variation_info = cycreq(requests.post(server+ext, headers=headers, data=dict_of_variants, timeout=None))
+                    variation_info = cyc_post_req_for_ens(server, ext, headers, dict_of_variants)
 
                     if not variation_info.ok:
                       variation_info.raise_for_status()
@@ -1177,7 +1273,7 @@ def pb_server_status_checker():
     }
 
     #r = requests.post(url, data=data)
-    r = cycreq(requests.post(url, data=data, timeout=None))
+    r = cyc_post_req(url, data)
 
     #Здесь условная конструкция, которая если SEARCH_SPECIFIC_PRIMER = [], говорить о том, что выбран неспецифический подбор праймеров
     #а значит нет смысла брать ссылку из первого запроса на второй запрос, который специфически подбирает праймеры. В этом случае второй запрос, который далее

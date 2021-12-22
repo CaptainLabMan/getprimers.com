@@ -479,10 +479,10 @@
           {% else %}
           <div>
             {% if not 'primer_blast_link' in data[exon] %}
-              <p class='text-center border-top pt-3 mb-1'>Primers with given params were not found.</p>
+              <p class='text-center border-top pt-3 mb-0'>Primers with given params were not found.</p>
               <p class='text-center mb-3'>Try to change Primers-search distances in Advanced settings by decreasing or increasing them.</p>
             {% elif 'primer_blast_link' in data[exon] %}
-              <p class='text-center border-top pt-3 mb-1'>Primers with given params were not found.</p>
+              <p class='text-center border-top pt-3 mb-0'>Primers with given params were not found.</p>
               <p class='text-center mb-0'>Try to change Primers-search distances in Advanced settings by decreasing or increasing them.</p>
             {% endif %}
             {% if 'waiting_time_is_over' in data[exon] %}
