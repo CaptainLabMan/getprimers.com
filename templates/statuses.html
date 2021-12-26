@@ -3,6 +3,8 @@
   <p class="text-dark mb-1">{{ exon.replace('_', ' ') }}: initialization</p>
 {% elif statuses_dict[exon] == 'request_to_pb' %}
   <p class="text-primary mb-1">{{ exon.replace('_', ' ') }}: primers design</p>
+{% elif statuses_dict[exon] == 'additional_search_for_primers' %}
+  <p class="text-warning mb-1">{{ exon.replace('_', ' ') }}: additional primers design</p>
 {% elif statuses_dict[exon] == 'request_from_pb_received' %}
   <p class="text-primary mb-1">{{ exon.replace('_', ' ') }}: primers design completed</p>
 {% elif statuses_dict[exon] == 'primers_were_found' %}
