@@ -677,6 +677,8 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         #После того как q не будет в р2.текст, программа будет идти дальше
         html_primers = r2.text
 
+        #_______________________________________________________________________________
+
         state_statuses(statuses_dict, element, gp_request_id, 'request_from_pb_received')
         primers_for_status_were_not_found = '<p class="info">No primers were found'
         primers_for_status_were_found = '<th>Template strand</th><th>Length</th><th>Start</th><th>Stop</th><th>Tm</th><th>GC%</th>'

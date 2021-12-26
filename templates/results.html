@@ -95,7 +95,7 @@
               {% if 'Primer_pair_1 ' in data[exon] %}
               <div class="p-1">
                 {% if data[exon]['homopolymers'] == ['checked'] %}
-                  <button class="btn btn-md btn-secondary py-0 px-1 border border-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ exon + '_Schemes'}}" aria-controls="offcanvasTop">{{ exon.replace('_', ' ') }}</button>
+                  <button class="btn btn-md btn-secondary py-0 px-1 border border-warning" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ exon + '_Schemes'}}" aria-controls="offcanvasTop" style='box-shadow: 0px 0px 5px orange;'>{{ exon.replace('_', ' ') }}</button>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill text-warning mx-0 px-0" viewBox="0 0 16 16">
                     <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
                   </svg>
@@ -160,7 +160,7 @@
                   {% if 'Primer_pair' in primer %}
                     {% if 'Primer_pair_1 ' in primer %}
 
-                    <div class="offcanvas offcanvas-top" data-bs-scroll="true" tabindex="-1" id="offcanvas_{{exon}}_{{primer.replace(' ', '')}}" aria-labelledby="offcanvas_{{exon}}_{{primer.replace(' ', '')}}_Label" style="height: 57.5%;">
+                    <div class="offcanvas offcanvas-top" data-bs-scroll="true" tabindex="-1" id="offcanvas_{{exon}}_{{primer.replace(' ', '')}}" aria-labelledby="offcanvas_{{exon}}_{{primer.replace(' ', '')}}_Label" style="height: 65%;">
                       <div class="offcanvas-header pb-0">
                         <button class="btn btn-outline-secondary border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ exon + '_Schemes'}}" aria-controls="offcanvasTop">
                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
@@ -203,7 +203,7 @@
                           <br>
                           <br>
                           <br>
-                          <div class="text-center">
+                          <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3">
                             <span class="p-1 mx-1 border border-primary rounded" style="background-color: #E8EAF6;">Forward primer</span>
                             <span class="p-1 mx-1 border border-success rounded" style="background-color: #E8F5E9;">Exon</span>
                             <span class="p-1 mx-1 border border-danger rounded" style="background-color: #FFEBEE;">Reverse primer</span>
@@ -304,7 +304,7 @@
 
                   {% else %}
 
-                  <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvas_{{exon}}_{{primer.replace(' ', '')}}" aria-labelledby="offcanvas_{{exon}}_{{primer.replace(' ', '')}}_Label" style="height: 57.5%;">
+                  <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvas_{{exon}}_{{primer.replace(' ', '')}}" aria-labelledby="offcanvas_{{exon}}_{{primer.replace(' ', '')}}_Label" style="height: 65%;">
                     <div class="offcanvas-header pb-0">
                       <button class="btn btn-outline-secondary border-0 shadow-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#{{ exon + '_Schemes'}}" aria-controls="offcanvasTop">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="24" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
@@ -347,7 +347,7 @@
                         <br>
                         <br>
                         <br>
-                        <div class="text-center">
+                        <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3">
                           <span class="p-1 mx-1 border border-primary rounded" style="background-color: #E8EAF6;">Forward primer</span>
                           <span class="p-1 mx-1 border border-success rounded" style="background-color: #E8F5E9;">Exon</span>
                           <span class="p-1 mx-1 border border-danger rounded" style="background-color: #FFEBEE;">Reverse primer</span>
