@@ -149,8 +149,8 @@
             <span class="text-center border" style="width: 24.5%; margin: 0% 0% 0% 0.04%; border-radius: 0px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">R-search distance</span>
           </div>
           <div class="input-group pb-3 mb-3 text-left">
-            <input class="border text-center" type="text" form="form" name="FIVE_SAVE_EXON_DISTANCE" value="65" placeholder="65" style="width: 24.5%; border-radius: 0px 0px 0px 6px;">
-            <input class="border text-center" type="text" form="form" name="THREE_SAVE_EXON_DISTANCE" value="65" placeholder="65" style="width: 24.5%; border-radius: 0px 0px 6px 0px;">
+            <input class="border text-center" type="text" form="form" name="FIVE_SAVE_EXON_DISTANCE" value="80" placeholder="80" style="width: 24.5%; border-radius: 0px 0px 0px 6px;">
+            <input class="border text-center" type="text" form="form" name="THREE_SAVE_EXON_DISTANCE" value="80" placeholder="80" style="width: 24.5%; border-radius: 0px 0px 6px 0px;">
             <input class="border text-center" type="text" form="form" name="F_SEARCH_DISTANCE" value="450" placeholder="450" style="width: 24.5%; margin-left: 1.96%; border-radius: 0px 0px 0px 6px; border-right: 6px;">
             <input class="border text-center" type="text" form="form" name="R_SEARCH_DISTANCE" value="450" placeholder="450" style="width: 24.5%; margin: 0% 0% 0% 0.04%; border-radius: 0px 0px 6px 0px;">
           </div>
@@ -220,18 +220,26 @@
 
           <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12">
               <div class="sticky-top text-dark border shadow bg-white ml-4" style='top: 20%; background-color: #E8F0FD; border-radius: 15px;'>
-                  <h3 class="mb-3 text-center text-dark m-3 border-bottom pb-2">Quick settings</h3>
-                  <div class="form-check form-switch mx-3 pt-2">
+                  <h3 class="mb-2 text-center text-dark m-3 border-bottom pb-2">Quick settings</h3>
+                  <div class="form-check form-switch mx-3 pt-2" title='The program will try to find primer pairs specific to the target sequence.'>
                     <input type="checkbox" class="form-check-input" id="customSwitch1" name='SEARCH_SPECIFIC_PRIMER' defval='checked' value='checked' checked form='form'>
                     <label class="form-check-label" for="customSwitch1">Specific search</label>
                   </div>
-                  <div class="form-check form-switch mx-3">
+                  <div class="form-check form-switch mx-3" title='The program will automatically increase the search distance for primers if no specific primers were found. If you need an amplicon with a strictly limited length, disable this function. Activation of this function can increase the search time for primers.'>
+                    <input type="checkbox" class="form-check-input" id="customSwitch5" name='auto_distances' defval='checked' value='checked' checked form='form'>
+                    <label class="form-check-label" for="customSwitch5">Auto-distances</label>
+                  </div>
+                  <div class="form-check form-switch mx-3" title='The program will filter out primers that are located on polymorphisms with a given frequency.'>
                     <input type="checkbox" class="form-check-input" id="customSwitch3" name='NO_SNP' defval='checked' value='checked' checked form='form'>
                     <label class="form-check-label" for="customSwitch3">Ignore binding sites containing SNPs</label>
                   </div>
-                  <div class="form-check form-switch mx-3 pt-0">
+                  <div class="form-check form-switch mx-3" title=''>
+                    <input type="checkbox" class="form-check-input" id="customSwitch6" name='#' defval='checked' value='checked' checked form='form' disabled>
+                    <label class="form-check-label" for="customSwitch6">Split large exons into multiple amplicons</label>
+                  </div>
+                  <div class="form-check form-switch mx-3 pt-0" title='The program will try to combine multiple exons into one amplicon.'>
                     <input type="checkbox" class="form-check-input" id="customSwitch2" defval='checked' name='CROSS_SEARCH' value='checked' form='form'>
-                    <label class="form-check-label" for="customSwitch2">Cross-exons search</label>
+                    <label class="form-check-label" for="customSwitch2">Сombine closely spaced exons</label>
                   </div>
                   <div class="form-check form-switch mx-3 pb-2">
                     <input type="checkbox" class="form-check-input" id="customSwitch4" name='SHOW_PB_LINK' defval='checked' value='checked' checked form='form'>
@@ -284,7 +292,7 @@
   </body>
 
   <footer class="fixed-bottom">
-    <div class="text-end">
+    <div class="text-end" title='Reverse complement'>
       <a href="/reverse_complement" target='_blank'>
         <img src="https://svgshare.com/i/ZQy.svg" width="32" height="32" class='btn p-0 text-right mx-2 mb-2 border text-secondary bg-primary' alt="GetPrimers" loading="lazy">
       </a>

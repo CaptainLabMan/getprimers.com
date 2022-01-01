@@ -92,9 +92,6 @@ def get_gene_id(SPECIES, gene, GCS):
     #get_gene_id = cycreq(requests.get(server+gene_path, headers={ "Content-Type" : "application/json"}, timeout=None))
     get_gene_id = cyc_get_req_for_ens(server, gene_path, headers)
 
-    if not get_gene_id.ok:
-      get_gene_id.raise_for_status()
-      sys.exit()
 
     #Тут условие, что если введен неверный ген, то get_gene_id_decoded == [], то будет вызван близайший return и на сайт будет подаваться исключение.
     get_gene_id_decoded = get_gene_id.json()
@@ -138,9 +135,6 @@ def get_transcripts(SPECIES, gene, GCS):
     #get_gene_id = cycreq(requests.get(server+gene_path, headers={ "Content-Type" : "application/json"}, timeout=None))
     get_gene_id = cyc_get_req_for_ens(server, gene_path, headers)
 
-    if not get_gene_id.ok:
-      get_gene_id.raise_for_status()
-      sys.exit()
 
     #Тут условие, что если введен неверный ген, то get_gene_id_decoded == [], то будет вызван близайший return и на сайт будет подаваться исключение.
     get_gene_id_decoded = get_gene_id.json()
@@ -247,9 +241,9 @@ def get_exons(file_name_pb, transcript_id, GCS):
 
     #Формирование дикта для сериализации данных в json
     params_json = {'chromosome': chromosome, 'strand': str(strand), 'exons_id': exons_id, 'dict_exons': dict_exons, 'exons_count': exons_count}
-    print(params_json)
+    #print(params_json)
     #Запись номера хромосомы и цепи в файл params.json
-    print(file_name_pb)
+    #print(file_name_pb)
     with open('params_dir/{}.json'.format(file_name_pb), 'w') as params:
         json.dump(params_json, params)
 
@@ -257,7 +251,7 @@ def get_exons(file_name_pb, transcript_id, GCS):
 
 
 
-def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exons, exons_id, dict_exons, SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF):
+def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exons, exons_id, dict_exons, SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF, auto_distances):
     import requests, sys, time, threading, re, json, math, copy
     from bs4 import BeautifulSoup
     from gp_clear_code import get_reverse_complement_seq, get_exons
@@ -337,25 +331,26 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
     info_dict = {}
 
-    def get_get_primers(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict):
+    def get_get_primers(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, auto_distances):
 
         state_statuses(statuses_dict, element, gp_request_id, 'started')
         #Здесь начало авто-дистант поиска
-        auto_search = 'checked'
-        if auto_search == 'checked':
-            F_SEARCH_DISTANCE_PB = 100
-            R_SEARCH_DISTANCE_PB = 100
+        if auto_distances == ['checked'] and SEARCH_SPECIFIC_PRIMER == ['checked']:
+            F_SEARCH_DISTANCE_PB = 125
+            R_SEARCH_DISTANCE_PB = 125
 
-        primers_search_dict = {}
-        def primers_search(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, primers_search_dict, request_status):
+        def primers_search(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, request_status, auto_distances):
+            primers_search_dict = {}
+            #print('\nlook_here_2')
+            #print(auto_distances)
 
             info_dict[element]={}
             info_dict[element]['search_distances']={}
 
             #Преобразование входящих переменных
             F_SEARCH_DISTANCE_PB = int(F_SEARCH_DISTANCE_PB)
-            print('look here')
-            print(F_SEARCH_DISTANCE_PB)
+            #print('look here')
+            #print(F_SEARCH_DISTANCE_PB)
             R_SEARCH_DISTANCE_PB = int(R_SEARCH_DISTANCE_PB)
             FIVE_SAVE_EXON_DISTANCE_PB = int(FIVE_SAVE_EXON_DISTANCE_PB)
             THREE_SAVE_EXON_DISTANCE_PB = int(THREE_SAVE_EXON_DISTANCE_PB)
@@ -390,6 +385,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
             #get_exon_only = cycreq(requests.get(server+exon_only_path, headers={ "Content-Type" : "text/plain"}, timeout=None))
             get_exon_only = cyc_get_req_for_ens(server, exon_only_path, headers)
             get_exon_only = get_exon_only.text
+            primers_search_dict['get_exon_only']=get_exon_only
 
             #Строки ниже необходимы просто для вывода инфы о дистанции для поиска праймеров в консоль.
             distance = '1 - {}\n{} - {}'.format(int(F_SEARCH_DISTANCE_PB) - int(FIVE_SAVE_EXON_DISTANCE_PB), len(get_exon_and_distance.text) - (int(R_SEARCH_DISTANCE_PB) - int(THREE_SAVE_EXON_DISTANCE_PB)), len(get_exon_and_distance.text))
@@ -482,8 +478,8 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
             if request_status == 'first_request':
                 state = 'request_to_pb'
-            elif request_status == 'additional_request':
-                state = 'additional_search_for_primers'
+            elif 'additional primers design' in request_status:
+                state = request_status
             state_statuses(statuses_dict, element, gp_request_id, state)
 
             #Здесь условная конструкция, которая если SEARCH_SPECIFIC_PRIMER = [], говорит о том, что выбран неспецифический подбор праймеров
@@ -514,7 +510,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     pb_specific_link = '{}'.format(headers_pb['NCBI-RCGI-RetryURL'])
                     primers_search_dict['pb_specific_link'] = pb_specific_link
                     print('\nPrimer_BLAST link for {}:'.format(exon_number_for_thread))
-                    print(pb_specific_link)
+                    #print(pb_specific_link)
                     #r2 = requests.get(pb_specific_link)
                     r2 = cyc_get_req_for_pb(pb_specific_link)
                     r_timeout = 0
@@ -533,8 +529,6 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                 else:
                     r2 = r
             elif SEARCH_SPECIFIC_PRIMER == ['checked']:
-
-                print('CHECK_R_PRIMERS_PAGE_1')
                 def pb_response_status_f(pb_response):
                     pb_response_status = ''
                     highly_similar_seq = 'Your PCR template is highly similar to the following sequence(s) from the search database. To increase the chance' #Your PCR template is highly similar to the following sequence(s) from the search database. To increase the chance of finding specific primers, please review the list below and select all sequences (within the given sequence ranges) that are intended or allowed targets.
@@ -554,7 +548,6 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     print(pb_response_status)
                     return pb_response_status
 
-
                 pb_response_status = pb_response_status_f(r)
                 waiting_time_is_over = ''
                 wrong_params = ''
@@ -564,47 +557,46 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         time.sleep(5)
                         pb_link_checker = 'checked'
                         pb_specific_link = '{}'.format(r.headers['NCBI-RCGI-RetryURL'])
-                        primers_search_dict['pb_specific_link'] = pb_specific_link
+                        #primers_search_dict['pb_specific_link'] = pb_specific_link
                         print(pb_specific_link)
                         #r = requests.get(pb_specific_link)
-                        print('Start primers_design_in_progress_for_{}'.format(element))
+                        #print('Start primers_design_in_progress_for_{}'.format(element))
                         r = cyc_get_req_for_pb(pb_specific_link)
                         pb_response_status = pb_response_status_f(r)
-                        print('End primers_design_in_progress_for_{}'.format(element))
+                        #print('End primers_design_in_progress_for_{}'.format(element))
                     elif pb_response_status == 'pb_redirect':
                         pb_link_checker = 'checked' # Нужно для добавления ссылки если она есть
                         pb_specific_link = '{}'.format(r.headers['NCBI-RCGI-RetryURL'])
-                        primers_search_dict['pb_specific_link'] = pb_specific_link
+                        #primers_search_dict['pb_specific_link'] = pb_specific_link
                         print(pb_specific_link)
                         #r = requests.get(pb_specific_link)
-                        print('Start pb_redirect')
+                        #print('Start pb_redirect')
                         r = cyc_get_req_for_pb(pb_specific_link)
                         pb_response_status = pb_response_status_f(r)
-                        print('End pb_redirect')
+                        #print('End pb_redirect')
                     elif pb_response_status == 'highly_similar_seq':
                         similar_genes = BeautifulSoup(r.text, 'html.parser')
                         similar_genes_items = similar_genes.find_all('table')
-                        print(similar_genes_items)
-
+                        #print(similar_genes_items)
 
                         all_gene_values = re.findall(r'ref\|\w*_\w*\.\w*\|\?\w*\?\w*', str(similar_genes_items))
                         #print('\nall_gene_values')
-                        print(all_gene_values)
+                        #print(all_gene_values)
                         all_id_inputs = re.findall(r'<tr><td.*</td></tr>', str(similar_genes_items))
                         #print('\nall_id_inputs')
-                        print(all_id_inputs)
+                        #print(all_id_inputs)
                         all_id_inputs = (all_id_inputs[0].replace('<tr><td class="c0">', '')).replace('</td></tr>', '')
                         #print('\nall_id_inputs')
-                        print(all_id_inputs)
+                        #print(all_id_inputs)
                         all_id_inputs = all_id_inputs.split('<input ')
-                        print('\nall_id_inputs')
-                        print(all_id_inputs)
+                        #print('\nall_id_inputs')
+                        #print(all_id_inputs)
                         all_id_inputs_splitted = []
                         for id_input in all_id_inputs:
                             if id_input != '':
                                 all_id_inputs_splitted.append(id_input)
-                        print('\nall_id_inputs_splitted')
-                        print(all_id_inputs_splitted)
+                        #print('\nall_id_inputs_splitted')
+                        #print(all_id_inputs_splitted)
 
                         ###
                         similar_genes_dict = {}
@@ -639,16 +631,15 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                             similar_genes_dict[index_of_match]['value']=similar_gene_value
 
                         primers_search_dict['similar_genes_dict'] = similar_genes_dict
-                        print('\nsimilar_genes_dict')
-                        print(similar_genes_dict)
+                        #print('\nsimilar_genes_dict')
+                        #print(similar_genes_dict)
 
                         all_inputs = BeautifulSoup(r.text, 'html.parser')
                         all_inputs_item = all_inputs.find_all('input')
                         all_inputs_dict = {}
                         first_user_rid = BeautifulSoup(r.text, 'html.parser')
                         first_user_rid_item = first_user_rid.find_all('input')
-                        #print('\nfirst_user_rid_item')
-                        print(first_user_rid_item)
+                        #print(first_user_rid_item)
                         for item in first_user_rid_item:
                             try:
                                 all_inputs_dict[item['name']]=item['value']
@@ -659,11 +650,11 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         for gene_checkbox_id in similar_genes_dict:
                             similarities_of_target_gene.append(similar_genes_dict[gene_checkbox_id]['similarity'])
                         highest_similarity_of_target_gene = max(similarities_of_target_gene)
-                        print('\nsimilarities_of_target_gene')
-                        print(similarities_of_target_gene)
-                        print('\nhighest_similarity_of_target_gene')
-                        print(highest_similarity_of_target_gene)
-                        print('\n')
+                        #print('\nsimilarities_of_target_gene')
+                        #print(similarities_of_target_gene)
+                        #print('\nhighest_similarity_of_target_gene')
+                        #print(highest_similarity_of_target_gene)
+                        #print('\n')
 
                         choosen_gene_checkbox_id = ''
                         for gene_checkbox_id in similar_genes_dict:
@@ -680,34 +671,38 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                                 choosen_gene_checkbox_id = gene_checkbox_id
                                 break
                         all_inputs_dict['USER_SEQLOC']=similar_genes_dict[choosen_gene_checkbox_id]['value']
-                        print(similar_genes_dict[choosen_gene_checkbox_id]['value'])
+                        #print(similar_genes_dict[choosen_gene_checkbox_id]['value'])
                         primers_search_dict['gene_checkbox_id'] = gene_checkbox_id
 
                         url = 'https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi'
                         #r = requests.post(url, data=all_inputs_dict)
                         #r = cycreq(requests.post(url, data=all_inputs_dict, timeout=None))
-                        print('Start highly_similar_seq')
+                        #print('Start highly_similar_seq')
                         r = cyc_post_req(url, all_inputs_dict)
                         #print(r.text)
                         #print(r.headers)
                         pb_response_status = pb_response_status_f(r)
-                        print('End highly_similar_seq')
+                        #print('End highly_similar_seq')
                     else:
-                        print('ELSE')
+                        #print('ELSE')
                         break
                     time.sleep(1)
                     r_timeout += 1
-                    print(r_timeout)
+                    #print(r_timeout)
                 else:
                     if r_timeout >= max_waiting_time_for_pb:
                         waiting_time_is_over = 'waiting_time_is_over'
                         print(waiting_time_is_over)
                 r2 = r
-                print('CHECK_R_PRIMERS_PAGE_2')
+                #print('CHECK_R_PRIMERS_PAGE_2')
+                primers_search_dict['waiting_time_is_over'] = waiting_time_is_over
+                primers_search_dict['wrong_params'] = wrong_params
 
             primers_search_dict['pb_link_checker'] = pb_link_checker
-            primers_search_dict['waiting_time_is_over'] = waiting_time_is_over
-            primers_search_dict['wrong_params'] = wrong_params
+            try:
+                primers_search_dict['pb_specific_link'] = pb_specific_link
+            except:
+                print('No_pb_specific_link')
             #Тут нужно грамотно разместить слип чтобы программа могла делать проверки
             #готовности праймеров и в случае не готовности делать слип и потом снова
             #повторять запрос
@@ -719,44 +714,48 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
             return primers_search_dict
 
 
-        #Первый запуск поиска праймеров
+        #Первый запуск функции поиска праймеров
         request_status = 'first_request'
-        primers_search_dict = primers_search(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, primers_search_dict, request_status)
+        primers_search_dict = primers_search(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, request_status, auto_distances)
         primers_are_specific = 'Primer pairs are specific to input template as no other targets were found in selected database'
         non_specific_primers_message = 'Primers may <b>not</b> be specific to the input PCR template'
         non_specific_primers_status = False
+        step = 100
         html_primers = primers_search_dict['html_primers']
         #Далее происходит повторный запуск функции поиска праймеров в сулчае если не найдены специичные с первой попытки
-        if auto_search == 'checked' and primers_are_specific not in html_primers:
-            print('\n1_______________________________________________________________________________')
-            print(element)
-            print(F_SEARCH_DISTANCE_PB)
-            request_status = 'additional_request'
-            stop_flag = False
-            max_distance_for_search = 500
+        if auto_distances == ['checked'] and primers_are_specific not in html_primers and SEARCH_SPECIFIC_PRIMER == ['checked']:
+            get_exon_only = primers_search_dict['get_exon_only']
+            max_distance_for_search = (int(PRIMER_PRODUCT_MAX_PB) - len(get_exon_only)) / 2
+            max_requests = math.floor(max_distance_for_search / step)
+            print('max_distance_for_search')
+            print(max_distance_for_search)
+            #max_distance_for_search = 300
             test_html_primers = ''
-            while primers_are_specific not in test_html_primers and stop_flag == False:
-                #state_statuses(statuses_dict, element, gp_request_id, 'additional_search_for_primers')
-                print('2_______________________________________________________________________________')
-                print('NEW')
-                print(element)
-                print(F_SEARCH_DISTANCE_PB)
-                print('3_______________________________________________________________________________\n')
-                primers_search_dict = primers_search(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, primers_search_dict, request_status)
-                test_html_primers = primers_search_dict['html_primers'] #Для проверки нахождения нужной строки в ответе, чтобы не сохранялся не тестовый html_primers
+            request_number = 1
+            while primers_are_specific not in test_html_primers and F_SEARCH_DISTANCE_PB <= max_distance_for_search:
+                request_status = 'additional primers design (try {} / {})'.format(request_number, max_requests)
+                request_number += 1
+                test_primers_search_dict = primers_search(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, request_status, auto_distances)
+                test_html_primers = test_primers_search_dict['html_primers'] #Для проверки нахождения нужной строки в ответе, чтобы не сохранялся не тестовый html_primers
                 if primers_are_specific in test_html_primers:
-                    html_primers = primers_search_dict['html_primers']
+                    primers_search_dict = test_primers_search_dict
+                    first_F_SEARCH_DISTANCE_PB = F_SEARCH_DISTANCE_PB
+                    first_R_SEARCH_DISTANCE_PB = R_SEARCH_DISTANCE_PB
                     break
                 elif non_specific_primers_message in test_html_primers and non_specific_primers_status == False:
                     non_specific_primers_status = True #Для того чтобы если есть только неспецифичные праймеры он сохранял самый короткий найденный ампликон
-                    html_primers = primers_search_dict['html_primers']
-                F_SEARCH_DISTANCE_PB += 100
-                R_SEARCH_DISTANCE_PB += 100
-                if F_SEARCH_DISTANCE_PB > max_distance_for_search:
-                    stop_flag = True
-                #print(html_primers)
-                print('4_______________________________________________________________________________\n')
+                    primers_search_dict = test_primers_search_dict
+                    first_F_SEARCH_DISTANCE_PB = F_SEARCH_DISTANCE_PB
+                    first_R_SEARCH_DISTANCE_PB = R_SEARCH_DISTANCE_PB
+                F_SEARCH_DISTANCE_PB += step
+                R_SEARCH_DISTANCE_PB += step
 
+        html_primers = primers_search_dict['html_primers']
+        try:
+            info_dict[element]['search_distances']['F_SEARCH_DISTANCE_PB'] = first_F_SEARCH_DISTANCE_PB
+            info_dict[element]['search_distances']['R_SEARCH_DISTANCE_PB'] = first_R_SEARCH_DISTANCE_PB
+        except:
+            pass
         print_dis = primers_search_dict['print_dis']
         print_exon_number = primers_search_dict['print_exon_number']
         exon_sequence_for_users = primers_search_dict['exon_sequence_for_users']
@@ -895,7 +894,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
     #Формирование и запуск разных потоков
     threads = []
     for element in taken_exons_id:
-        t = threading.Thread(target=get_get_primers, args=[element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict])
+        t = threading.Thread(target=get_get_primers, args=[element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, auto_distances])
         t.start()
         threads.append(t)
         time.sleep(1.1) #Здесь слип необходим потому что между запуском потока нужны интервалы, иначе библиотека Requests жаулется на слишком большок количество запросов за единицу времени, поэтому искусственно замедляем.
@@ -908,7 +907,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         exons_result_dict.append(ee)
 
 
-
+    #Отсев парймеров поп полиморфизмам
     if NO_SNP == ['checked']:
         MAF = float(MAX_MAF)
         #Здесь будет происходить отбор праймероа на отсуствие полиморфизмов в месте их отжига на темплейте.
@@ -918,7 +917,6 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
         not_primer_pairs = ['exon_sequence', 'seq_search_positions', 'primer_blast_link', 'specific_checker', 'waiting_time_is_over', 'primers_checker', 'similar_gene', 'wrong_params']
 
-        print('\n---Forward primers---\n')
         for exon in result_dict:
             #Если праймеры есть, будет создан статус об их проверке на полиморфизмы
             if 'Primer_pair_1 ' in result_dict[exon]:
@@ -926,7 +924,9 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                 state_statuses(statuses_dict, exon, gp_request_id, state)
             print(exon)
             for primer_pair in result_dict[exon]:
+                contain_polymorphisms = False
                 if primer_pair not in not_primer_pairs:
+                    print('\n---Forward primers---\n')
                     print('\n{}({})'.format(primer_pair, exon))
 
                     if strand == '1':
@@ -983,11 +983,96 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                                 print('3')
                                 del result_dict_deepcopy[exon][primer_pair]
                                 print("Отбор по SNP выполнен")
+                                contain_polymorphisms = True
                                 break
 
+                    if contain_polymorphisms != True:
+                        print('\n---Reverse primers---\n')
+                        print('\n{}({})'.format(primer_pair, exon))
+
+                        #Запросы для реверс праймеров.
+                        if strand == '1':
+                            genome_primer_R_position = '{}:{}-{}'.format(chromosome, result_dict_deepcopy[exon]['seq_search_positions']['seq_search_start'] + (result_dict_deepcopy[exon]['exon_sequence']).lower().find(get_reverse_complement_seq(result_dict_deepcopy[exon][primer_pair]['seq_R']).lower()), result_dict_deepcopy[exon]['seq_search_positions']['seq_search_start'] + (result_dict_deepcopy[exon]['exon_sequence']).lower().find(get_reverse_complement_seq(result_dict_deepcopy[exon][primer_pair]['seq_R']).lower()) + len(result_dict_deepcopy[exon][primer_pair]['seq_F']) - 1)
+                        elif strand == '-1':
+                            genome_primer_R_position = '{}:{}-{}'.format(chromosome, result_dict_deepcopy[exon]['seq_search_positions']['seq_search_end'] - (result_dict_deepcopy[exon]['exon_sequence']).lower().find(get_reverse_complement_seq(result_dict_deepcopy[exon][primer_pair]['seq_R']).lower()) - len(result_dict_deepcopy[exon][primer_pair]['seq_F']) + 1, result_dict_deepcopy[exon]['seq_search_positions']['seq_search_end'] - (result_dict_deepcopy[exon]['exon_sequence']).lower().find(get_reverse_complement_seq(result_dict_deepcopy[exon][primer_pair]['seq_R']).lower()))
+                        print(genome_primer_R_position)
+
+
+                        #Заопрос возвращающий всю инфу по данному диапазону, включая все варианты.
+                        ext = "/overlap/region/{}/{}?feature=variation;".format(SPECIES, genome_primer_R_position)
+                        headers={"Content-Type" : "application/json"}
+                        #dict_of_variants_info = requests.get(server+ext, headers={ "Content-Type" : "application/json"})
+                        #dict_of_variants_info = cycreq(requests.get(server+ext, headers={ "Content-Type" : "application/json"}, timeout=None))
+                        dict_of_variants_info = cyc_get_req_for_ens(server, ext, headers)
+
+                        if not dict_of_variants_info.ok:
+                          dict_of_variants_info.raise_for_status()
+                          sys.exit()
+                        dict_of_variants_info = dict_of_variants_info.json()
+
+                        list_of_variants = []
+                        for variant in dict_of_variants_info:
+                            list_of_variants.append(variant['id'])
+
+                        dict_of_variants = {}
+                        dict_of_variants["ids"]=list_of_variants
+                        dict_of_variants = str(dict_of_variants).replace('\'', '\"')
+                        print(dict_of_variants)
+
+
+                        #Запрос собирающий инфу по найденным выше вариантам, включая MAF.
+                        ext = "/variation/{}".format(SPECIES)
+                        headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
+                        #variation_info = requests.post(server+ext, headers=headers, data=dict_of_variants)
+                        #variation_info = cycreq(requests.post(server+ext, headers=headers, data=dict_of_variants, timeout=None))
+                        variation_info = cyc_post_req_for_ens(server, ext, headers, dict_of_variants)
+
+                        if not variation_info.ok:
+                          variation_info.raise_for_status()
+                          sys.exit()
+                        variation_info = variation_info.json()
+
+                        variants_maf = {}
+                        for variant in variation_info:
+                            variants_maf[variant]={'MAF': variation_info[variant]['MAF'], 'start': variation_info[variant]['mappings'][0]['start'], 'end': variation_info[variant]['mappings'][0]['end']}
+                        print(variants_maf)
+
+                        for variant_maf in variants_maf:
+                            print(variants_maf[variant_maf]['MAF'])
+                            if variants_maf[variant_maf]['MAF'] != None:
+                                print('2')
+                                if variants_maf[variant_maf]['MAF'] > MAF:
+                                    print('3')
+                                    del result_dict_deepcopy[exon][primer_pair]
+                                    print("Отбор по SNP выполнен")
+                                    break
+
+            for number_of_primer_pair in range(1, 11):
+                if 'Primer_pair_{} '.format(number_of_primer_pair) in result_dict_deepcopy[exon]:
+                    state = 'primers_do_not_contain_polymorphisms'
+                    state_statuses(statuses_dict, exon, gp_request_id, state)
+                    break
+                else:
+                #elif 'Primer_pair_{} '.format(number_of_primer_pair) not in result_dict_deepcopy[exon] and result_dict_deepcopy[exon]['primers_checker'] == ['checked']:
+                    state = 'primers_contain_polymorphisms'
+                    state_statuses(statuses_dict, exon, gp_request_id, state)
+
+            #Часть определяющая есть ли пары праймеров в дикте2 после проверки на полиморфизмы, далее выдает статус
+            #if 'Primer_pair_1 ' in result_dict[exon]
+            '''for primer_pair in result_dict_deepcopy[exon]:
+                if primer_pair not in not_primer_pairs:
+                    primer_pair_for_comparison = re.search(r'Primer_pair_', primer_pair)
+                    primer_pair_for_comparison = primer_pair_for_comparison.group(0)
+                    if 'Primer_pair_' == str(primer_pair_for_comparison):
+                        state = 'primers_do_not_contain_polymorphisms'
+                        break
+            if 'primers_checker' in result_dict_deepcopy[exon] and not 'Primer_pair_1 ' in result_dict_deepcopy[exon]:
+                state = 'primers_contain_polymorphisms'
+            state_statuses(statuses_dict, exon, gp_request_id, state)'''
 
         #Все тоже самое, только для реверс праймеров.
         result_dict_deepcopy_2 = copy.deepcopy(result_dict_deepcopy)
+        '''
         print('\n---Reverse primers---\n')
         for exon in result_dict_deepcopy:
             print(exon)
@@ -1051,18 +1136,13 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                                 del result_dict_deepcopy_2[exon][primer_pair]
                                 print("Отбор по SNP выполнен")
                                 break
+
             #Часть определяющая есть ли пары праймеров в дикте2 после проверки на полиморфизмы, далее выдает статус
             #if 'Primer_pair_1 ' in result_dict[exon]
             for primer_pair in result_dict_deepcopy_2[exon]:
                 if primer_pair not in not_primer_pairs:
-                    print('TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_')
-                    print(exon)
-                    print(primer_pair)
-                    print(result_dict_deepcopy_2)
                     primer_pair_for_comparison = re.search(r'Primer_pair_', primer_pair)
                     primer_pair_for_comparison = primer_pair_for_comparison.group(0)
-                    print(primer_pair)
-                    print(primer_pair_for_comparison)
                     if 'Primer_pair_' == str(primer_pair_for_comparison):
                         state = 'primers_do_not_contain_polymorphisms'
                         break
@@ -1070,6 +1150,8 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                 state = 'primers_contain_polymorphisms'
             state_statuses(statuses_dict, exon, gp_request_id, state)
         #print(result_dict_deepcopy_2)
+        '''
+
 
         #for position, element in enumerate(taken_exons_list):
         #Теперь нужно заменить названия ключей в словаре чтобы пары праймеров после удаления некоторых из них шли по порядку.
@@ -1077,7 +1159,6 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         for exon in result_dict_deepcopy_2:
             for position, primer_pair in enumerate(result_dict_deepcopy_2[exon]):
                 if primer_pair not in not_primer_pairs:
-                    print(position + 1)
                     result_dict_deepcopy_3[exon]['Primer_pair_{} '.format(position + 1)]=result_dict_deepcopy_3[exon].pop(primer_pair)
 
         result_dict = result_dict_deepcopy_3
@@ -1181,7 +1262,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     template_for_homopolymers_search = (result_dict[exon]['exon_sequence'][f_primer_last_enrty:r_primer_first_enrty]).upper()
                     def homopolymes_search(template_for_homopolymers_search):
                         dict_with_homopolymers = {}
-                        homopolymers_lens = list(range(8, 31))
+                        homopolymers_lens = list(range(8, 36))
                         homopolymers_lens = homopolymers_lens[::-1]
                         nucleotides = ['A', 'T', 'G', 'C']
                         for nucleotide in nucleotides:

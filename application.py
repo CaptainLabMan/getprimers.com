@@ -146,6 +146,9 @@ def results():
     SEARCH_SPECIFIC_PRIMER = request.form.getlist('SEARCH_SPECIFIC_PRIMER');
     form_params_dict['SEARCH_SPECIFIC_PRIMER']=SEARCH_SPECIFIC_PRIMER
 
+    auto_distances = request.form.getlist('auto_distances');
+    form_params_dict['auto_distances']=auto_distances
+
     CROSS_SEARCH = request.form.getlist('CROSS_SEARCH');
     form_params_dict['CROSS_SEARCH']=CROSS_SEARCH
 
@@ -272,10 +275,11 @@ def ajax_results():
     F_SEARCH_DISTANCE_PB = form_params_data['F_SEARCH_DISTANCE_PB']
     R_SEARCH_DISTANCE_PB = form_params_data['R_SEARCH_DISTANCE_PB']
     MAX_MAF = form_params_data['MAX_MAF']
+    auto_distances = form_params_data['auto_distances']
     params_data = {};
     with open('params_dir/{}.json'.format(file_name_pb)) as params:
         params_data = json.load(params)
-    return render_template('results.html', gp_request_id=gp_request_id, SPECIES=SPECIES, transcript_id=transcript_id, gene_id=gene_id, GCS_data=GCS, data=get_primers(gp_request_id, gene, SPECIES, params_data['chromosome'], params_data['strand'], taken_exons, params_data['exons_id'], params_data['dict_exons'], SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF), gene=get_gene_id(SPECIES, gene, GCS)['gene_display_name'].upper(), transcript=transcript, taken_exons_count=taken_exons_count)
+    return render_template('results.html', gp_request_id=gp_request_id, SPECIES=SPECIES, transcript_id=transcript_id, gene_id=gene_id, GCS_data=GCS, data=get_primers(gp_request_id, gene, SPECIES, params_data['chromosome'], params_data['strand'], taken_exons, params_data['exons_id'], params_data['dict_exons'], SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF, auto_distances), gene=get_gene_id(SPECIES, gene, GCS)['gene_display_name'].upper(), transcript=transcript, taken_exons_count=taken_exons_count)
 
 
 @application.route('/results_table', methods=['GET', 'POST'])
