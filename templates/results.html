@@ -189,7 +189,7 @@
                             {% endif %}
                           {% endfor %}
                         </div>
-                        <div><span class="text-muted fw-light">{{ data[exon][primer]["pre_primer"].seq }}</span><span class="text-dark"><span class="border border-primary rounded" style="background-color: #E8EAF6;">{{ data[exon][primer]["f_primer"].seq }}</span>{{ data[exon][primer]["first_gap"].seq|safe }}<span class="border border-success rounded" style="background-color: #E8F5E9;">{{ data[exon][primer]["exon"].seq|safe }}</span>{{ data[exon][primer]["second_gap"].seq|safe }}</span><span class="border border-danger rounded" style="background-color: #FFEBEE;">{{ data[exon][primer]["r_primer"].seq }}</span><span class="text-muted fw-light">{{ data[exon][primer]["post_primer"].seq }}</span>
+                        <div><span class="text-muted fw-light">{{ data[exon][primer]["pre_primer"].seq }}</span><span class="text-dark"><span class="border border-primary rounded" style="background-color: #E8EAF6;">{{ data[exon][primer]["f_primer"].seq }}</span>{{ data[exon][primer]["first_gap"].seq|safe }}<span class="border border-success rounded" style="background-color: #E8F5E9;">{{ data[exon][primer]["exon"].seq|upper|safe }}</span>{{ data[exon][primer]["second_gap"].seq|safe }}</span><span class="border border-danger rounded" style="background-color: #FFEBEE;">{{ data[exon][primer]["r_primer"].seq }}</span><span class="text-muted fw-light">{{ data[exon][primer]["post_primer"].seq }}</span>
                         </div>
                         <br>
                         <br>
@@ -480,7 +480,7 @@
           <div>
             {% if not 'primer_blast_link' in data[exon] %}
               <p class='text-center border-top pt-3 mb-0'>Primers with given params were not found.</p>
-              <p class='text-center mb-3'>Try to change Primers-search distances in Advanced settings by decreasing or increasing them.</p>
+              <p class='text-center mb-0'>Try to change Primers-search distances in Advanced settings by decreasing or increasing them.</p>
             {% elif 'primer_blast_link' in data[exon] %}
               <p class='text-center border-top pt-3 mb-0'>Primers with given params were not found.</p>
               <p class='text-center mb-0'>Try to change Primers-search distances in Advanced settings by decreasing or increasing them.</p>
@@ -509,20 +509,26 @@
     </div>
 
     <div class="col-lg-4 col-md-12">
-        <div class="sticky-top p-0 border mb-3 bg-white shadow" style="top: 13%; border-radius: 15px 15px 15px 15px;">
+      <div class="sticky-top" style='top: 10%;'>
+        <div class="p-0 border mb-3 bg-white shadow" style="border-radius: 15px 15px 15px 15px;">
           <button type="submit" class="btn btn-success w-100 mb-1 py-3 px-2 btn-lg border-0" style='border-radius: 15px 15px 0px 0px;' form='results_table_form'>Show taken primer pairs as a table</button>
           <div class="text-dark px-3" style="border-radius: 0px 0px 15px 15px;">
             <div class="form-check form-switch ml-3 mt-2">
-              <input type="checkbox" class="form-check-input" id="customSwitch3" defval='checked' disabled>
-              <label class="form-check-label" for="customSwitch3">Show all params</label >
+              <input form='results_table_form' name='name_column' type="checkbox" class="form-check-input" id="customSwitch2" defval='checked' value='checked' checked>
+              <label class="form-check-label" for="customSwitch2">Show name column</label>
             </div>
             <div class="form-check form-switch ml-3">
-              <input type="checkbox" class="form-check-input" id="customSwitch1" active checked disabled>
-              <label class="form-check-label" for="customSwitch1">Auto-naming</label>
+              <input form='results_table_form' name='auto_naming' type="checkbox" class="form-check-input" id="customSwitch3" defval='checked' value='checked' checked>
+              <label class="form-check-label" for="customSwitch3">Auto-naming</label>
+            </div>
+            <div class="form-check form-switch ml-3">
+              <input form='results_table_form' name='show_scale' type="checkbox" class="form-check-input" id="customSwitch4" defval='checked' value='checked' checked>
+              <label class="form-check-label" for="customSwitch4">Show scale</label>
+              <input form='results_table_form' name='scale_value' class="mx-1 text-center my-0 border-0 rounded bg-light py-0" style='width: 20%;' type="text" defval='0.04' value="0.04" placeholder="0.04">
             </div>
             <div class="form-check form-switch ml-3 mb-3">
-              <input type="checkbox" class="form-check-input" id="customSwitch2" active checked disabled>
-              <label class="form-check-label" for="customSwitch2">Auto-concentration</label>
+              <input form='results_table_form' name='tm_and_product_length' type="checkbox" class="form-check-input" id="customSwitch1" defval='checked'  value='checked' checked>
+              <label class="form-check-label" for="customSwitch1">Show melting temperature and product length</label>
             </div>
           </div>
         </div>
@@ -555,7 +561,7 @@
         </div>
       </div>
 
-      <div class="sticky-top border shadow p-0 bg-white" style="top: 34.5%; border-radius: 15px 15px 15px 15px;">
+      <div class="border shadow p-0 bg-white" style="border-radius: 15px 15px 15px 15px;">
       <button class="btn btn-sm border-0 text-center p-3 w-100 shadow-none bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample2" aria-expanded="false" aria-controls="collapseExample2" style="border-radius: 15px 15px 15px 15px;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down" viewBox="0 0 16 16">
           <path d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659l4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z"/>
@@ -582,60 +588,7 @@
         <br>
       </div>
       </div>
-
-      <script>
-        $("#dna_loading").hide();
-      </script>
-
-      <script>
-              function get_len_seq() {
-                  $.ajax({
-                      type: "POST",
-                      url: "/get_len_seq",
-                      type: 'POST',
-                      data: $('form').serialize(),
-                      success: function(response) {
-                          $('#get_len_seq_1').html(response)
-                          console.log(response);
-                      },
-                      error: function(error) {
-                          console.log(error);
-                      }
-                  });
-                  $.ajax({
-                      type: "POST",
-                      url: "/get_gc_content_page",
-                      type: 'POST',
-                      data: $('form').serialize(),
-                      success: function(response) {
-                          $('#get_gc_content').html(response)
-                          console.log(response);
-                      },
-                      error: function(error) {
-                          console.log(error);
-                      }
-                  });
-              }
-      </script>
-
-      <script>
-                  function get_reverse_complement() {
-                      $.ajax({
-                          type: "POST",
-                          url: "/get_reverse_complement",
-                          type: 'POST',
-                          data: $('form').serialize(),
-                          success: function(response) {
-                              $('#response_textarea').html(response)
-                              console.log(response);
-                          },
-                          error: function(error) {
-                              console.log(error);
-                          }
-                      });
-                  }
-      </script>
-
+      </div>
     </div>
   </div>
 </div>
@@ -646,3 +599,56 @@
 </div>
 
 </div>
+
+<script>
+  $("#dna_loading").hide();
+</script>
+
+  <script>
+          function get_len_seq() {
+              $.ajax({
+                  type: "POST",
+                  url: "/get_len_seq",
+                  type: 'POST',
+                  data: $('form').serialize(),
+                  success: function(response) {
+                      $('#get_len_seq_1').html(response)
+                      console.log(response);
+                  },
+                  error: function(error) {
+                      console.log(error);
+                  }
+              });
+              $.ajax({
+                  type: "POST",
+                  url: "/get_gc_content_page",
+                  type: 'POST',
+                  data: $('form').serialize(),
+                  success: function(response) {
+                      $('#get_gc_content').html(response)
+                      console.log(response);
+                  },
+                  error: function(error) {
+                      console.log(error);
+                  }
+              });
+          }
+  </script>
+
+  <script>
+              function get_reverse_complement() {
+                  $.ajax({
+                      type: "POST",
+                      url: "/get_reverse_complement",
+                      type: 'POST',
+                      data: $('form').serialize(),
+                      success: function(response) {
+                          $('#response_textarea').html(response)
+                          console.log(response);
+                      },
+                      error: function(error) {
+                          console.log(error);
+                      }
+                  });
+              }
+  </script>

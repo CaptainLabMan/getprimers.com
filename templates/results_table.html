@@ -7,23 +7,62 @@
 {% block main_block %}
 <div class="container text-center mb-5">
   <br>
-  <div class="w-100 text-center border border-secondary p-3" style='border-radius: 15px;' contenteditable=true>
+  <div class="w-100 text-center border border-secondary p-3 table-responsive text-nowrap" style='border-radius: 15px;' contenteditable=true>
     <table class="table-responsive text-nowrap table-borderless w-100">
       <thead hidden>
         <tr>
+          {% if name_column == ['checked'] %}
+            <th scope="col"></th>
+          {% endif %}
           <th scope="col"></th>
-          <th scope="col"></th>
+          {% if tm_and_product_length == ['checked'] %}
+            <th scope="col"></th>
+            <th scope="col"></th>
+          {% endif %}
         </tr>
       </thead>
       <tbody class="text-start">
         {% for primer_pair in taken_primers_dict %}
         <tr>
-          <th scope="row">{{ taken_primers_dict[primer_pair]['gene_exon_number'] }}</th>
-          <td>{{ taken_primers_dict[primer_pair]['f_primer_name'] }}; {{ taken_primers_dict[primer_pair]['seq_F'] }}; {{ taken_primers_dict[primer_pair]['concentration'] }};</td>
+          {% if name_column == ['checked'] %}
+            <th scope="row">{{ taken_primers_dict[primer_pair]['gene_exon_number'] }}</th>
+          {% endif %}
+          <td>
+            {% if auto_naming == ['checked'] %}
+              {{ taken_primers_dict[primer_pair]['f_primer_name'] }};
+            {% endif %}
+              {{ taken_primers_dict[primer_pair]['seq_F'] }};
+            {% if show_scale == ['checked'] %}
+              {{ taken_primers_dict[primer_pair]['scale_value'] }}
+            {% endif %}
+          </td>
+          {% if tm_and_product_length == ['checked'] %}
+            <td>
+              Tm: {{ taken_primers_dict[primer_pair]['tm_F'] }}
+            </td>
+            <td>
+              Product length: {{ taken_primers_dict[primer_pair]['len_amp'] }}
+            </td>
+          {% endif %}
         </tr>
         <tr>
-          <th scope="row"></th>
-          <td>{{ taken_primers_dict[primer_pair]['r_primer_name'] }}; {{ taken_primers_dict[primer_pair]['seq_R'] }}; {{ taken_primers_dict[primer_pair]['concentration'] }};</td>
+          {% if name_column == ['checked'] %}
+            <th scope="row"></th>
+          {% endif %}
+          <td>
+            {% if auto_naming == ['checked'] %}
+              {{ taken_primers_dict[primer_pair]['r_primer_name'] }};
+            {% endif %}
+              {{ taken_primers_dict[primer_pair]['seq_R'] }};
+            {% if show_scale == ['checked'] %}
+              {{ taken_primers_dict[primer_pair]['scale_value'] }}
+            {% endif %}
+            </td>
+            {% if tm_and_product_length == ['checked'] %}
+              <td>
+                Tm: {{ taken_primers_dict[primer_pair]['tm_R'] }}
+              </td>
+            {% endif %}
         </tr>
         <tr>
           <th scope="row"></th>

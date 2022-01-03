@@ -122,7 +122,7 @@ def get_gene_id(SPECIES, gene, GCS):
 
 
 def get_transcripts(SPECIES, gene, GCS):
-    import requests, sys, json
+    import requests, sys, json, re
 
     if GCS == 'GRCh37':
         server = "https://grch37.rest.ensembl.org"
@@ -170,14 +170,17 @@ def get_transcripts(SPECIES, gene, GCS):
     transcripts_list = []
     for element in get_transcripts_id_decoded:
         if element['Parent'] == gene_id:
-            transcripts_list.append(element['transcript_id'])
+            transcript_and_version = '{}.{}'.format(element['transcript_id'], element['version'])
+            transcripts_list.append(transcript_and_version)
 
 
     transcripts_and_refseq_list = []
     # Часть по вытаскиванию RefSeq и Часть по выводу на экран инфы по транскриптан с рефсек.
     #Для увеличения скорости работы, можно сделать несколько потоков (только вот скорее всего сервера энсембла не позволят делать так много запросов практически одномоментно).
     for transcript_id_element in transcripts_list:
-        ref_seq_path = "/xrefs/id/{}?".format(transcript_id_element)
+        transcript_id_element_for_req = re.sub(r'\.\w*', '', transcript_id_element)
+        transcript_id_element_for_req = re.sub(r' - \w*.\w*', '', transcript_id_element_for_req)
+        ref_seq_path = "/xrefs/id/{}?".format(transcript_id_element_for_req)
         headers={"Content-Type" : "application/json"}
         #get_ref_seq = requests.get(server+ref_seq_path, headers={ "Content-Type" : "application/json"})
         #get_ref_seq = cycreq(requests.get(server+ref_seq_path, headers={ "Content-Type" : "application/json"}, timeout=None))
@@ -251,10 +254,21 @@ def get_exons(file_name_pb, transcript_id, GCS):
 
 
 
-def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exons, exons_id, dict_exons, SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF, auto_distances):
+def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exons, exons_id, dict_exons, SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF, auto_distances, short_transcript_id, include_UTRs, split_exons):
     import requests, sys, time, threading, re, json, math, copy
     from bs4 import BeautifulSoup
     from gp_clear_code import get_reverse_complement_seq, get_exons
+
+    statuses_dict = {}
+    statuses_file_name = 'status_of_{}'.format(gp_request_id)
+    with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
+        json.dump('{}', statuses_file)
+
+    if GCS == 'GRCh37':
+        server = "https://grch37.rest.ensembl.org"
+    elif GCS == 'GRCh38':
+        server = "https://rest.ensembl.org"
+
 
     gene_name = gene_name.upper()
 
@@ -271,13 +285,41 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         taken_exons_dict['Exon_{}'.format(int(element))]=dict_exons[exons_id[int(element) - 1]]
     taken_exons_id = taken_exons_list
     dict_exons = taken_exons_dict
+    print(taken_exons_id)
+    print(dict_exons)
+
+    #Получение данных о расположении UTRs транскрипта и изменение позиций первого и последнего экзонов если задан чекбокс
+    if include_UTRs != ['checked']:
+        link = "/lookup/id/{}?expand=1;utr=1".format(short_transcript_id)
+        headers = {"Content-Type" : "application/json"}
+        UTRs_request = cyc_get_req_for_ens(server, link, headers)
+        UTRs_request = UTRs_request.json()
+        UTRs_request = UTRs_request['UTR']
+        UTRs_dict = {}
+        for UTR in UTRs_request:
+            if UTR['object_type'] == 'five_prime_UTR':
+                UTRs_dict['five_prime_UTR'] = UTR
+            elif UTR['object_type'] == 'three_prime_UTR':
+                UTRs_dict['three_prime_UTR'] = UTR
+
+        for exon in dict_exons:
+            if strand == '-1':
+                if dict_exons[exon]['end'] == UTRs_dict['five_prime_UTR']['end']:
+                    dict_exons[exon]['end'] = UTRs_dict['five_prime_UTR']['start'] - 1
+                if dict_exons[exon]['start'] == UTRs_dict['three_prime_UTR']['start']:
+                    dict_exons[exon]['start'] = UTRs_dict['three_prime_UTR']['end'] + 1
+            elif strand == '1':
+                if dict_exons[exon]['start'] == UTRs_dict['five_prime_UTR']['start']:
+                    dict_exons[exon]['start'] = UTRs_dict['five_prime_UTR']['end'] + 1
+                if dict_exons[exon]['end'] == UTRs_dict['three_prime_UTR']['end']:
+                    dict_exons[exon]['end'] = UTRs_dict['three_prime_UTR']['start'] - 1
 
     #Здесь происходит формирование списка и словаря для cross_search, то ест здесь объединяются экзоны с максимальной заданной длиной - cross_search_max_distance
-    cross_search_distance = 0
-    cross_search_max_distance = int(CROSS_EXONS_MAX_SIZE_PB)
-    cross_search_taken_exons_dict = {}
-    cross_search_taken_exons_list = []
     if CROSS_SEARCH == ['checked']:
+        cross_search_distance = 0
+        cross_search_max_distance = int(CROSS_EXONS_MAX_SIZE_PB)
+        cross_search_taken_exons_dict = {}
+        cross_search_taken_exons_list = []
         for position, element in enumerate(taken_exons_list):
             selection_list = []
             selection_dict = {}
@@ -312,10 +354,55 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         dict_exons = cross_search_taken_exons_dict
     print(dict_exons)
 
-    if GCS == 'GRCh37':
-        server = "https://grch37.rest.ensembl.org"
-    elif GCS == 'GRCh38':
-        server = "https://rest.ensembl.org"
+    #Разбивание больших экзонов на части
+    if split_exons == ['checked']:
+        print(dict_exons)
+        new_taken_exons_list = []
+        dict_exons_deepcopy = copy.deepcopy(dict_exons)
+        max_exon_size = int(CROSS_EXONS_MAX_SIZE_PB)
+        print(dict_exons)
+        for exon in dict_exons:
+            exon_len = dict_exons[exon]['end'] - dict_exons[exon]['start'] + 1
+            if exon_len > max_exon_size:
+                divider = math.ceil(exon_len / max_exon_size)
+                optimal_exons_size = math.ceil(exon_len / divider)
+                distance_counter = dict_exons[exon]['start']
+                exons_part_counter = 1
+                stop_flag = False
+                while stop_flag == False:
+                    if strand == '1':
+                        if (distance_counter + optimal_exons_size) < dict_exons[exon]['end']:
+                            dict_exons_deepcopy['{}-{}'.format(exon, exons_part_counter)]={}
+                            dict_exons_deepcopy['{}-{}'.format(exon, exons_part_counter)]['start']=distance_counter
+                            dict_exons_deepcopy['{}-{}'.format(exon, exons_part_counter)]['end']=distance_counter + optimal_exons_size
+                        else:
+                            dict_exons_deepcopy['{}-{}'.format(exon, exons_part_counter)]={}
+                            dict_exons_deepcopy['{}-{}'.format(exon, exons_part_counter)]['start']=distance_counter
+                            dict_exons_deepcopy['{}-{}'.format(exon, exons_part_counter)]['end']=dict_exons[exon]['end']
+                            stop_flag = True
+                    elif strand == '-1':
+                        if (distance_counter + optimal_exons_size) < dict_exons[exon]['end']:
+                            dict_exons_deepcopy['{}-{}'.format(exon, divider + 1 - exons_part_counter)]={}
+                            dict_exons_deepcopy['{}-{}'.format(exon, divider + 1 - exons_part_counter)]['start']=distance_counter
+                            dict_exons_deepcopy['{}-{}'.format(exon, divider + 1 - exons_part_counter)]['end']=distance_counter + optimal_exons_size
+                        else:
+                            dict_exons_deepcopy['{}-{}'.format(exon, divider + 1 - exons_part_counter)]={}
+                            dict_exons_deepcopy['{}-{}'.format(exon, divider + 1 - exons_part_counter)]['start']=distance_counter
+                            dict_exons_deepcopy['{}-{}'.format(exon, divider + 1 - exons_part_counter)]['end']=dict_exons[exon]['end']
+                            stop_flag = True
+                    distance_counter += optimal_exons_size + 1
+                    exons_part_counter += 1
+                del dict_exons_deepcopy[exon]
+                print(exon_len)
+                print(divider)
+                print(optimal_exons_size)
+        for exon in dict_exons_deepcopy:
+            new_taken_exons_list.append(exon)
+        taken_exons_id = new_taken_exons_list
+        dict_exons = dict_exons_deepcopy
+        print(taken_exons_id)
+        print(dict_exons)
+
 
     # Часть для получения последовательностей для ПраймерБласта + Часть по рассчетам для вставки в Праймер бласт
     print('\nPrimer design is going.\nPlease wait...\n')
@@ -323,11 +410,6 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
 
     result_dict = {}
-
-    statuses_dict = {}
-    statuses_file_name = 'status_of_{}'.format(gp_request_id)
-    with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
-        json.dump('{}', statuses_file)
 
     info_dict = {}
 
@@ -604,8 +686,9 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
                         match = 0
                         for index, gene_in_list in enumerate(all_id_inputs_splitted):
-                            gene = re.search(r'target\d?="new_entrez\d?">\w*</a>', str(gene_in_list))
+                            gene = re.search(r'target\d?="new_entrez\d?">\w*-*\w*</a>', str(gene_in_list))
                             gene = gene.group(0)
+                            print(gene)
                             gene = re.sub(r'target\d?="new_entrez\d?">', '', gene)
                             gene = re.sub(r'</a>', '', gene)
                             #print(gene)
@@ -1052,106 +1135,13 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     state = 'primers_do_not_contain_polymorphisms'
                     state_statuses(statuses_dict, exon, gp_request_id, state)
                     break
-                else:
-                #elif 'Primer_pair_{} '.format(number_of_primer_pair) not in result_dict_deepcopy[exon] and result_dict_deepcopy[exon]['primers_checker'] == ['checked']:
+                #else:
+                elif 'Primer_pair_{} '.format(number_of_primer_pair) not in result_dict_deepcopy[exon] and 'primers_checker' in result_dict_deepcopy[exon]:
                     state = 'primers_contain_polymorphisms'
                     state_statuses(statuses_dict, exon, gp_request_id, state)
 
-            #Часть определяющая есть ли пары праймеров в дикте2 после проверки на полиморфизмы, далее выдает статус
-            #if 'Primer_pair_1 ' in result_dict[exon]
-            '''for primer_pair in result_dict_deepcopy[exon]:
-                if primer_pair not in not_primer_pairs:
-                    primer_pair_for_comparison = re.search(r'Primer_pair_', primer_pair)
-                    primer_pair_for_comparison = primer_pair_for_comparison.group(0)
-                    if 'Primer_pair_' == str(primer_pair_for_comparison):
-                        state = 'primers_do_not_contain_polymorphisms'
-                        break
-            if 'primers_checker' in result_dict_deepcopy[exon] and not 'Primer_pair_1 ' in result_dict_deepcopy[exon]:
-                state = 'primers_contain_polymorphisms'
-            state_statuses(statuses_dict, exon, gp_request_id, state)'''
-
         #Все тоже самое, только для реверс праймеров.
         result_dict_deepcopy_2 = copy.deepcopy(result_dict_deepcopy)
-        '''
-        print('\n---Reverse primers---\n')
-        for exon in result_dict_deepcopy:
-            print(exon)
-            for primer_pair in result_dict_deepcopy[exon]:
-                if primer_pair not in not_primer_pairs:
-                    print('\n{}({})'.format(primer_pair, exon))
-
-                    #Запросы для форвард праймеров.
-                    if strand == '1':
-                        genome_primer_R_position = '{}:{}-{}'.format(chromosome, result_dict_deepcopy[exon]['seq_search_positions']['seq_search_start'] + (result_dict_deepcopy[exon]['exon_sequence']).lower().find(get_reverse_complement_seq(result_dict_deepcopy[exon][primer_pair]['seq_R']).lower()), result_dict_deepcopy[exon]['seq_search_positions']['seq_search_start'] + (result_dict_deepcopy[exon]['exon_sequence']).lower().find(get_reverse_complement_seq(result_dict_deepcopy[exon][primer_pair]['seq_R']).lower()) + len(result_dict_deepcopy[exon][primer_pair]['seq_F']) - 1)
-                    elif strand == '-1':
-                        genome_primer_R_position = '{}:{}-{}'.format(chromosome, result_dict_deepcopy[exon]['seq_search_positions']['seq_search_end'] - (result_dict_deepcopy[exon]['exon_sequence']).lower().find(get_reverse_complement_seq(result_dict_deepcopy[exon][primer_pair]['seq_R']).lower()) - len(result_dict_deepcopy[exon][primer_pair]['seq_F']) + 1, result_dict_deepcopy[exon]['seq_search_positions']['seq_search_end'] - (result_dict_deepcopy[exon]['exon_sequence']).lower().find(get_reverse_complement_seq(result_dict_deepcopy[exon][primer_pair]['seq_R']).lower()))
-                    print(genome_primer_R_position)
-
-
-                    #Заопрос возвращающий всю инфу по данному диапазону, включая все варианты.
-                    ext = "/overlap/region/{}/{}?feature=variation;".format(SPECIES, genome_primer_R_position)
-                    headers={"Content-Type" : "application/json"}
-                    #dict_of_variants_info = requests.get(server+ext, headers={ "Content-Type" : "application/json"})
-                    #dict_of_variants_info = cycreq(requests.get(server+ext, headers={ "Content-Type" : "application/json"}, timeout=None))
-                    dict_of_variants_info = cyc_get_req_for_ens(server, ext, headers)
-
-                    if not dict_of_variants_info.ok:
-                      dict_of_variants_info.raise_for_status()
-                      sys.exit()
-                    dict_of_variants_info = dict_of_variants_info.json()
-
-                    list_of_variants = []
-                    for variant in dict_of_variants_info:
-                        list_of_variants.append(variant['id'])
-
-                    dict_of_variants = {}
-                    dict_of_variants["ids"]=list_of_variants
-                    dict_of_variants = str(dict_of_variants).replace('\'', '\"')
-                    print(dict_of_variants)
-
-
-                    #Запрос собирающий инфу по найденным выше вариантам, включая MAF.
-                    ext = "/variation/{}".format(SPECIES)
-                    headers={ "Content-Type" : "application/json", "Accept" : "application/json"}
-                    #variation_info = requests.post(server+ext, headers=headers, data=dict_of_variants)
-                    #variation_info = cycreq(requests.post(server+ext, headers=headers, data=dict_of_variants, timeout=None))
-                    variation_info = cyc_post_req_for_ens(server, ext, headers, dict_of_variants)
-
-                    if not variation_info.ok:
-                      variation_info.raise_for_status()
-                      sys.exit()
-                    variation_info = variation_info.json()
-
-                    variants_maf = {}
-                    for variant in variation_info:
-                        variants_maf[variant]={'MAF': variation_info[variant]['MAF'], 'start': variation_info[variant]['mappings'][0]['start'], 'end': variation_info[variant]['mappings'][0]['end']}
-                    print(variants_maf)
-
-                    for variant_maf in variants_maf:
-                        print(variants_maf[variant_maf]['MAF'])
-                        if variants_maf[variant_maf]['MAF'] != None:
-                            print('2')
-                            if variants_maf[variant_maf]['MAF'] > MAF:
-                                print('3')
-                                del result_dict_deepcopy_2[exon][primer_pair]
-                                print("Отбор по SNP выполнен")
-                                break
-
-            #Часть определяющая есть ли пары праймеров в дикте2 после проверки на полиморфизмы, далее выдает статус
-            #if 'Primer_pair_1 ' in result_dict[exon]
-            for primer_pair in result_dict_deepcopy_2[exon]:
-                if primer_pair not in not_primer_pairs:
-                    primer_pair_for_comparison = re.search(r'Primer_pair_', primer_pair)
-                    primer_pair_for_comparison = primer_pair_for_comparison.group(0)
-                    if 'Primer_pair_' == str(primer_pair_for_comparison):
-                        state = 'primers_do_not_contain_polymorphisms'
-                        break
-            if 'primers_checker' in result_dict_deepcopy_2[exon] and not 'Primer_pair_1 ' in result_dict_deepcopy_2[exon]:
-                state = 'primers_contain_polymorphisms'
-            state_statuses(statuses_dict, exon, gp_request_id, state)
-        #print(result_dict_deepcopy_2)
-        '''
-
 
         #for position, element in enumerate(taken_exons_list):
         #Теперь нужно заменить названия ключей в словаре чтобы пары праймеров после удаления некоторых из них шли по порядку.

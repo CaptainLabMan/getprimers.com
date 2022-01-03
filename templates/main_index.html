@@ -164,7 +164,7 @@
             <span class="text-center border" style="width: 25%; border-radius: 6px 6px 0px 0px; background-color: #F2F2F2; color: #6C757D;">Max</span>
           </div>
           <div class="input-group mb-1 text-left">
-            <input class="border text-center" type="text" form="form" name="CROSS_EXONS_MAX_SIZE" value="600" placeholder="600" style="width: 25%; margin-right: 26%; border-radius: 0px 0px 6px 6px;">
+            <input class="border text-center" type="text" form="form" name="CROSS_EXONS_MAX_SIZE" value="500" placeholder="500" style="width: 25%; margin-right: 26%; border-radius: 0px 0px 6px 6px;">
             <input class="border text-center" type="text" form="form" name="MAX_MAF" value="0.01" placeholder="0.01" style="width: 25%; border-radius: 0px 0px 6px 6px;">
           </div>
         </div>
@@ -233,8 +233,12 @@
                     <input type="checkbox" class="form-check-input" id="customSwitch3" name='NO_SNP' defval='checked' value='checked' checked form='form'>
                     <label class="form-check-label" for="customSwitch3">Ignore binding sites containing SNPs</label>
                   </div>
+                  <div class="form-check form-switch mx-3" title='The program will filter out primers that are located on polymorphisms with a given frequency.'>
+                    <input type="checkbox" class="form-check-input" id="customSwitch7" name='include_UTRs' defval='checked' value='checked' form='form'>
+                    <label class="form-check-label" for="customSwitch7">Include 5'- and 3'-UTRs in amplicon</label>
+                  </div>
                   <div class="form-check form-switch mx-3" title=''>
-                    <input type="checkbox" class="form-check-input" id="customSwitch6" name='#' defval='checked' value='checked' checked form='form' disabled>
+                    <input type="checkbox" class="form-check-input" id="customSwitch6" name='split_exons' defval='checked' value='checked' checked form='form'>
                     <label class="form-check-label" for="customSwitch6">Split large exons into multiple amplicons</label>
                   </div>
                   <div class="form-check form-switch mx-3 pt-0" title='The program will try to combine multiple exons into one amplicon.'>

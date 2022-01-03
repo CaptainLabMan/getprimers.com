@@ -112,8 +112,8 @@ def get_exons_app():
     file_name_pb = 'pb_file_' + str(gp_request_id)
     transcript = request.form['transcript'];
     print(transcript)
+    transcript = re.sub(r'\.\w*', '', transcript)
     transcript = re.sub(r' - \w*.\w*', '', transcript)
-    print(transcript)
     GCS = request.form['GCS'];
     if transcript == 'Select transcript':
         return render_template('pls_select_transcript.html')
@@ -148,6 +148,12 @@ def results():
 
     auto_distances = request.form.getlist('auto_distances');
     form_params_dict['auto_distances']=auto_distances
+
+    include_UTRs = request.form.getlist('include_UTRs');
+    form_params_dict['include_UTRs']=include_UTRs
+
+    split_exons = request.form.getlist('split_exons');
+    form_params_dict['split_exons']=split_exons
 
     CROSS_SEARCH = request.form.getlist('CROSS_SEARCH');
     form_params_dict['CROSS_SEARCH']=CROSS_SEARCH
@@ -240,11 +246,14 @@ def ajax_results():
     SPECIES = form_params_data['SPECIES']
     gene = form_params_data['gene']
     GCS = form_params_data['GCS']
-    gene_id = get_gene_id(SPECIES, gene, GCS)['gene_id']
+    gene_data = get_gene_id(SPECIES, gene, GCS)
+    gene_name = gene_data['gene_display_name'].upper()
+    gene_id = gene_data['gene_id']
     try:
         transcript = form_params_data['transcript']
-        transcript_id = re.sub(r' - \w*', '', transcript)
-        print(transcript_id)
+        transcript_id = re.sub(r' - \w*.\w*', '', transcript)
+        short_transcript_id = re.sub(r'\.\w*', '', transcript)
+        short_transcript_id = re.sub(r' - \w*.\w*', '', short_transcript_id)
     except:
         return render_template('no_params.html')
     if not transcript or transcript == 'Select transcript':
@@ -276,10 +285,12 @@ def ajax_results():
     R_SEARCH_DISTANCE_PB = form_params_data['R_SEARCH_DISTANCE_PB']
     MAX_MAF = form_params_data['MAX_MAF']
     auto_distances = form_params_data['auto_distances']
+    include_UTRs = form_params_data['include_UTRs']
+    split_exons = form_params_data['split_exons']
     params_data = {};
     with open('params_dir/{}.json'.format(file_name_pb)) as params:
         params_data = json.load(params)
-    return render_template('results.html', gp_request_id=gp_request_id, SPECIES=SPECIES, transcript_id=transcript_id, gene_id=gene_id, GCS_data=GCS, data=get_primers(gp_request_id, gene, SPECIES, params_data['chromosome'], params_data['strand'], taken_exons, params_data['exons_id'], params_data['dict_exons'], SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF, auto_distances), gene=get_gene_id(SPECIES, gene, GCS)['gene_display_name'].upper(), transcript=transcript, taken_exons_count=taken_exons_count)
+    return render_template('results.html', gp_request_id=gp_request_id, SPECIES=SPECIES, transcript_id=transcript_id, gene_id=gene_id, GCS_data=GCS, data=get_primers(gp_request_id, gene, SPECIES, params_data['chromosome'], params_data['strand'], taken_exons, params_data['exons_id'], params_data['dict_exons'], SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF, auto_distances, short_transcript_id, include_UTRs, split_exons), gene=gene_name, transcript=transcript, taken_exons_count=taken_exons_count)
 
 
 @application.route('/results_table', methods=['GET', 'POST'])
@@ -288,8 +299,13 @@ def results_table():
     result_dict_json_name = 'result_dict_{}'.format(gp_request_id)
     with open('result_dicts_dir/{}.json'.format(result_dict_json_name)) as result_dicts_json:
         result_dict = json.load(result_dicts_json)
+    auto_naming = request.form.getlist('auto_naming');
+    show_scale = request.form.getlist('show_scale');
+    scale_value = request.form['scale_value'];
+    tm_and_product_length = request.form.getlist('tm_and_product_length');
+    name_column = request.form.getlist('name_column');
+    print(auto_naming, show_scale, scale_value, tm_and_product_length, name_column)
     taken_primers = request.form.getlist('taken_primers');
-    concentration = '0,04'
     taken_primers_dict = {}
     for taken_primer_pair in taken_primers:
         taken_primer_pair = taken_primer_pair.replace('primer_checkbox_', '')
@@ -305,12 +321,15 @@ def results_table():
         taken_primers_dict[taken_primer_pair]['gene_exon_number']=gene_exon_number
         taken_primers_dict[taken_primer_pair]['f_primer_name']=f_primer_name
         taken_primers_dict[taken_primer_pair]['seq_F']=result_dict[exon][primer_pair]['seq_F']
+        taken_primers_dict[taken_primer_pair]['tm_F']=result_dict[exon][primer_pair]['tm_F']
         taken_primers_dict[taken_primer_pair]['r_primer_name']=r_primer_name
         taken_primers_dict[taken_primer_pair]['seq_R']=result_dict[exon][primer_pair]['seq_R']
-        taken_primers_dict[taken_primer_pair]['concentration']=concentration
+        taken_primers_dict[taken_primer_pair]['tm_R']=result_dict[exon][primer_pair]['tm_R']
+        taken_primers_dict[taken_primer_pair]['len_amp']=result_dict[exon][primer_pair]['len_amp']
+        taken_primers_dict[taken_primer_pair]['scale_value']=scale_value
     print(taken_primers_dict)
     if taken_primers != []:
-        return render_template('results_table.html', taken_primers_dict=taken_primers_dict)
+        return render_template('results_table.html', taken_primers_dict=taken_primers_dict, auto_naming=auto_naming, show_scale=show_scale, tm_and_product_length=tm_and_product_length, name_column=name_column)
     elif taken_primers == []:
         return '<h1 style="margin: 25% 0 0; text-align: center;">Primer pairs were not taken</h1>'
 
