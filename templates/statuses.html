@@ -1,32 +1,43 @@
+<div class="progress" style='border-radius: 15px 15px 0 0; height: 19px;'>
+  <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%;">{{ progress }}%</div>
+</div>
+<h2 class="text-dark my-3">Please wait</h2>
 {% for exon in statuses_dict %}
 {% if statuses_dict[exon] == 'started' %}
-  <p class="text-dark mb-1">{{ exon.replace('_', ' ') }}: initialization</p>
+  <p class="text-dark mb-1 mx-1">{{ exon.replace('_', ' ') }}: initialization</p>
 {% elif statuses_dict[exon] == 'request_to_pb' %}
-  <p class="text-primary mb-1">{{ exon.replace('_', ' ') }}: primers design</p>
+  <p class="text-primary mb-1 mx-1">{{ exon.replace('_', ' ') }}: primers design</p>
 {% elif 'additional primers design' in statuses_dict[exon] %}
-  <p class="text-warning mb-1">{{ exon.replace('_', ' ') }}: {{ statuses_dict[exon] }}</p>
+  <p class="text-warning mb-1 mx-1">{{ exon.replace('_', ' ') }}: {{ statuses_dict[exon] }}</p>
 {% elif statuses_dict[exon] == 'request_from_pb_received' %}
-  <p class="text-primary mb-1">{{ exon.replace('_', ' ') }}: primers design completed</p>
+  <p class="text-primary mb-1 mx-1">{{ exon.replace('_', ' ') }}: primers design completed</p>
 {% elif statuses_dict[exon] == 'primers_were_found' %}
-  <p class="text-success mb-1">{{ exon.replace('_', ' ') }}: primers were found</p>
+  <p class="text-success mb-1 mx-1">{{ exon.replace('_', ' ') }}: primers found</p>
 {% elif statuses_dict[exon] == 'primers_were_not_found' %}
-  <p class="text-danger mb-1">{{ exon.replace('_', ' ') }}: primers were not found for some reason</p>
+  <p class="text-danger mb-1 mx-1">{{ exon.replace('_', ' ') }}: primers not found for some reason</p>
 {% elif statuses_dict[exon] == 'polymorphisms_checking' %}
-  <p class="text-warning mb-1">{{ exon.replace('_', ' ') }}: polymorphisms checking</p>
+  <p class="text-warning mb-1 mx-1">{{ exon.replace('_', ' ') }}: polymorphisms checking</p>
 {% elif statuses_dict[exon] == 'primers_do_not_contain_polymorphisms' %}
-  <p class="text-success mb-1">{{ exon.replace('_', ' ') }}: primers do not contain polymorphisms</p>
+  <p class="text-success mb-1 mx-1">{{ exon.replace('_', ' ') }}: primers do not contain polymorphisms</p>
 {% elif statuses_dict[exon] == 'primers_contain_polymorphisms' %}
-  <p class="text-danger mb-1">{{ exon.replace('_', ' ') }}: all designed primers contain polymorphisms</p>
+  <p class="text-danger mb-1 mx-1">{{ exon.replace('_', ' ') }}: all designed primers contain polymorphisms</p>
 {% else %}
-  <p class="text-dark mb-1">{{ exon.replace('_', ' ') }}: {{statuses_dict[exon]}}</p>
+  <p class="text-dark mb-1 mx-1">{{ exon.replace('_', ' ') }}: {{statuses_dict[exon]}}</p>
 {% endif %}
 
 {% endfor %}
-{% if statuses_dict|length < '20'|int %}
-  {% for _ in range(1, 20 - statuses_dict|length) %}
+{% if statuses_dict|length < '19'|int %}
+  {% for _ in range(1, 19 - statuses_dict|length) %}
     <br>
   {% endfor %}
 {% endif %}
+
+<div class="my-3 px-2">
+  <p class="m-0 p-0">Expected waiting time - {{ expected_waiting_time }} min.</p>
+  {% if pb_server_status == 'overloaded' %}
+    <p class="mt-1 m-0 p-0 text-danger">The server accepts too many requests, the waiting time can be significantly increased.</p>
+  {% endif %}
+</div>
 
 <script>
   var gp_request_id=document.getElementById("gp_request_id").value;

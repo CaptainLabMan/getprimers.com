@@ -259,6 +259,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
     from bs4 import BeautifulSoup
     from gp_clear_code import get_reverse_complement_seq, get_exons
 
+    data_file_name = 'data_of_{}'.format(gp_request_id)
+    data_dict = {}
+    data_dict['pb_server_status']={}
+
     statuses_dict = {}
     statuses_file_name = 'status_of_{}'.format(gp_request_id)
     with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
@@ -402,6 +406,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         dict_exons = dict_exons_deepcopy
         print(taken_exons_id)
         print(dict_exons)
+
+        data_dict['taken_exons']=taken_exons_id
+        with open('data/{}.json'.format(data_file_name), 'w') as data_file:
+            json.dump(data_dict, data_file)
 
 
     # Часть для получения последовательностей для ПраймерБласта + Часть по рассчетам для вставки в Праймер бласт
@@ -603,6 +611,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         r_timeout += 15
                         #r2 = requests.get(pb_specific_link)
                         r2 = cyc_get_req_for_pb(pb_specific_link)
+                        pb_server_status_checker(data_file_name, data_dict, r2.text, element)
                         count_of_requests += 1
                         print('\nRequest {} for {}'.format(count_of_requests, exon_number_for_thread))
                         print('Time has pass - {} sec. Max waiting time - {} sec'.format(r_timeout, max_waiting_time_for_pb))
@@ -610,6 +619,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                             print(pb_specific_link)
                 else:
                     r2 = r
+                    pb_server_status_checker(data_file_name, data_dict, r2.text, element)
             elif SEARCH_SPECIFIC_PRIMER == ['checked']:
                 def pb_response_status_f(pb_response):
                     pb_response_status = ''
@@ -644,6 +654,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #r = requests.get(pb_specific_link)
                         #print('Start primers_design_in_progress_for_{}'.format(element))
                         r = cyc_get_req_for_pb(pb_specific_link)
+                        pb_server_status_checker(data_file_name, data_dict, r.text, element)
                         pb_response_status = pb_response_status_f(r)
                         #print('End primers_design_in_progress_for_{}'.format(element))
                     elif pb_response_status == 'pb_redirect':
@@ -654,6 +665,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #r = requests.get(pb_specific_link)
                         #print('Start pb_redirect')
                         r = cyc_get_req_for_pb(pb_specific_link)
+                        pb_server_status_checker(data_file_name, data_dict, r.text, element)
                         pb_response_status = pb_response_status_f(r)
                         #print('End pb_redirect')
                     elif pb_response_status == 'highly_similar_seq':
@@ -762,6 +774,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #r = cycreq(requests.post(url, data=all_inputs_dict, timeout=None))
                         #print('Start highly_similar_seq')
                         r = cyc_post_req(url, all_inputs_dict)
+                        pb_server_status_checker(data_file_name, data_dict, r.text, element)
                         #print(r.text)
                         #print(r.headers)
                         pb_response_status = pb_response_status_f(r)
@@ -1403,7 +1416,7 @@ def get_gc_content_f(seq):
 
     return gc_content
 
-
+'''
 def primers_design_time_counter(taken_exons, SEARCH_SPECIFIC_PRIMER, NO_SNP, pb_server_status):
     import math
     waiting_time_dict = {}
@@ -1427,39 +1440,47 @@ def primers_design_time_counter(taken_exons, SEARCH_SPECIFIC_PRIMER, NO_SNP, pb_
     waiting_time_dict['max_primers_design_time']=max_primers_design_time
 
     return waiting_time_dict
+'''
 
 
-def pb_server_status_checker():
-    import requests
-    #HGD gene ex. 13 (len = 182)
-    seq_for_pb = 'GGAACTGCATGAGTGAGTTCATGGGACTCATCCGAGGTCACTATGAGGCAAAGCAAGGTGGGTTCCTGCCAGGGGGAGGGAGTCTACACAGCACAATGACCCCCCATGGACCTGATGCTGACTGCTTTGAGAAGGCCAGCAAGGTCAAGCTGGCACCTGAGAGGATTGCCGATGGCACCATG'
-    url = 'https://www.ncbi.nlm.nih.gov/tools/primer-blast/primertool.cgi'
-    data = {
-        'INPUT_SEQUENCE': seq_for_pb,
-        'PRIMER5_START': '1',
-        'PRIMER5_END': '70',
-        'PRIMER3_START': '110',
-        'PRIMER3_END': '182'
-    }
-
-    #r = requests.post(url, data=data)
-    r = cyc_post_req(url, data)
-
-    #Здесь условная конструкция, которая если SEARCH_SPECIFIC_PRIMER = [], говорить о том, что выбран неспецифический подбор праймеров
-    #а значит нет смысла брать ссылку из первого запроса на второй запрос, который специфически подбирает праймеры. В этом случае второй запрос, который далее
-    #необходим для выполнения алгоритма приравнивается к значению первого запроса, просто потому что второй нужен для дальнейшей работы алгоритма, как я уже
-    #и написал.
-    #В случае же если SEARCH_SPECIFIC_PRIMER = ['checked'], то из хейдера первого запроса будет получена ссылка на страницу специфического подбора праймеров, которая
-    #далее будет использована во втором запросе для получения хтмл страницы со специфиечскими праймерами.
-    q = 'Making primers specific to your PCR template.'
-    pb_server_status = 'ok'
-    if q in r.text:
+def pb_server_status_checker(data_file_name, data_dict, html_page, element):
+    import json
+    # Your request is waiting to be processed...our system has temporarily reached full capacity and the wait time can be much longer than usual.
+    server_overloaded_message = 'Your request is waiting to be processed'
+    pb_server_status = ''
+    if server_overloaded_message in html_page:
         pb_server_status = 'overloaded'
-        print('---\nServer is overloaded\n---')
-    else:
-        print('---\nServer is OK\n---')
+    elif server_overloaded_message not in html_page:
+        pb_server_status = 'ok'
 
-    return pb_server_status
+    try:
+        with open('data/{}.json'.format(data_file_name)) as data_file:
+            data_dict = json.load(data_file)
+    except:
+        print('Some error occured while opening data.json file 1 (gp.py)')
+        success = False
+        while success == False:
+            try:
+                with open('data/{}.json'.format(data_file_name)) as data_file:
+                    data_dict = json.load(data_file)
+                success = True
+            except:
+                print('Some error occured while opening data.json file 2 (gp.py)')
+
+    data_dict['pb_server_status'][element]=pb_server_status
+    try:
+        with open('data/{}.json'.format(data_file_name), 'w') as data_file:
+            json.dump(data_dict, data_file)
+    except:
+        print('Some error occured while opening data.json file 1 (gp.py)')
+        success = False
+        while success == False:
+            try:
+                with open('data/{}.json'.format(data_file_name), 'w') as data_file:
+                    json.dump(data_dict, data_file)
+                success = True
+            except:
+                print('Some error occured while opening data.json file 2 (gp.py)')
 
 
 def random_number():
