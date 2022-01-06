@@ -513,8 +513,14 @@ def statuses():
 
 @application.route('/tests', methods=['GET', 'POST'])
 def tests():
-    client_ip = jsonify({'ip': request.remote_addr}).json
-    return client_ip
+    client_ip1 = jsonify({'ip': request.remote_addr}).json
+    client_ip2 = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    client_ip3 = request.environ['REMOTE_ADDR']
+    ip_dict = {}
+    ip_dict['client_ip1']=client_ip1
+    ip_dict['client_ip2']=client_ip2
+    ip_dict['client_ip3']=client_ip3
+    return ip_dict
 
 
 if __name__ == '__main__':
