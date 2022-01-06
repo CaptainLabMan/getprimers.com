@@ -514,6 +514,7 @@ def statuses():
 @application.route('/tests', methods=['GET', 'POST'])
 def tests():
     client_ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    #client_ip = '37.144.247.117'
     g = geocoder.ip('{}'.format(client_ip))
     g = g.json
     tests_dict = {}
