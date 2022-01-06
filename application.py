@@ -1,4 +1,4 @@
-from flask import Flask, render_template, json, request, url_for
+from flask import Flask, render_template, json, request, url_for, jsonify
 import requests, sys, time, threading, re, math, random, cgi
 from jinja2 import Template
 from gp_clear_code import get_transcripts, get_exons, get_primers, get_seq_len, get_reverse_complement_seq, get_gene_id, get_gc_content_f, pb_server_status_checker, get_clear_seq_for_textarea
@@ -376,6 +376,7 @@ def statuses():
                 success = True
             except:
                 print('Some error occured while opening data.json file 2 (application.py)')
+                time.sleep(1)
     taken_exons = data_dict['taken_exons']
     taken_exons_count = len(taken_exons)
 
@@ -475,15 +476,19 @@ def statuses():
         SEARCH_SPECIFIC_PRIMER = form_params_data['SEARCH_SPECIFIC_PRIMER']
         NO_SNP = form_params_data['NO_SNP']
 
+        if taken_exons_count == 1:
+            time = 2
+        else:
+            time = 1
         additional_time = math.ceil(taken_exons_count / 10)
 
         expected_waiting_time = 0
         if SEARCH_SPECIFIC_PRIMER == ['checked'] and NO_SNP == ['checked']:
-            expected_waiting_time = (1 * taken_exons_count) + additional_time
+            expected_waiting_time = (time * taken_exons_count) + additional_time
         elif SEARCH_SPECIFIC_PRIMER == ['checked'] and NO_SNP == []:
-            expected_waiting_time = math.ceil((0.7 * taken_exons_count)) + additional_time
+            expected_waiting_time = math.ceil((time * 0.7 * taken_exons_count)) + additional_time
         elif SEARCH_SPECIFIC_PRIMER == [] and NO_SNP == ['checked']:
-            expected_waiting_time = math.ceil((0.5 * taken_exons_count)) + additional_time
+            expected_waiting_time = math.ceil((time * 0.5 * taken_exons_count)) + additional_time
         elif SEARCH_SPECIFIC_PRIMER == [] and NO_SNP == []:
             expected_waiting_time = math.ceil(0.025 * taken_exons_count)
 
@@ -504,6 +509,12 @@ def statuses():
         with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
             json.dump('{}', statuses_file)
         return 'Completion'
+
+
+@application.route('/tests', methods=['GET', 'POST'])
+def tests():
+    client_ip = jsonify({'ip': request.remote_addr}).json
+    return client_ip
 
 
 if __name__ == '__main__':

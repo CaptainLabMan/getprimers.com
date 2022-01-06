@@ -257,7 +257,11 @@ def get_exons(file_name_pb, transcript_id, GCS):
 def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exons, exons_id, dict_exons, SEARCH_SPECIFIC_PRIMER, CROSS_SEARCH, NO_SNP, SHOW_PB_LINK, GCS, PRIMER_MIN_TM_PB, PRIMER_OPT_TM_PB, PRIMER_MAX_TM_PB, PRIMER_MAX_DIFF_TM_PB, PRIMER_MIN_SIZE_PB, PRIMER_OPT_SIZE_PB, PRIMER_MAX_SIZE_PB, POLYX_PB, CROSS_EXONS_MAX_SIZE_PB, PRIMER_PRODUCT_MIN_PB, PRIMER_PRODUCT_MAX_PB, PRIMER_MIN_GC_PB, PRIMER_MAX_GC_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, MAX_MAF, auto_distances, short_transcript_id, include_UTRs, split_exons):
     import requests, sys, time, threading, re, json, math, copy
     from bs4 import BeautifulSoup
-    from gp_clear_code import get_reverse_complement_seq, get_exons
+    from gp_clear_code import get_reverse_complement_seq, get_exons, requests_statistic
+
+    print('\n_______________________________________________________________________________')
+    requests_statistic(gene_name, taken_exons, exons_id)
+    print('_______________________________________________________________________________\n')
 
     data_file_name = 'data_of_{}'.format(gp_request_id)
     data_dict = {}
@@ -1481,6 +1485,28 @@ def pb_server_status_checker(data_file_name, data_dict, html_page, element):
                 success = True
             except:
                 print('Some error occured while opening data.json file 2 (gp.py)')
+                time.sleep(1)
+
+
+def requests_statistic(gene_name, taken_exons, exons_id):
+    import json
+    gene_name = gene_name.upper()
+    requests_statistic_file_name = 'requests_statistic'
+
+    with open('statistic_data/{}.json'.format(requests_statistic_file_name)) as requests_statistic_file:
+        requests_statistic_dict = json.load(requests_statistic_file)
+    print(requests_statistic_dict)
+    #clear dict
+    #requests_statistic_dict={}
+
+    if gene_name not in requests_statistic_dict:
+        requests_statistic_dict[gene_name]={}
+        requests_statistic_dict[gene_name]['requests_count']=1
+    elif gene_name in requests_statistic_dict:
+        requests_statistic_dict[gene_name]['requests_count']=requests_statistic_dict[gene_name]['requests_count'] + 1
+
+    with open('statistic_data/{}.json'.format(requests_statistic_file_name), 'w') as requests_statistic_file:
+        json.dump(requests_statistic_dict, requests_statistic_file)
 
 
 def random_number():

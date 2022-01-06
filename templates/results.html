@@ -333,7 +333,7 @@
                           {% endif %}
                         {% endfor %}
                       </div>
-                      <div class=""><span class="text-muted fw-light">{{ data[exon][primer]["pre_primer"].seq }}</span><span class="text-dark"><span class="border border-primary rounded" style="background-color: #E8EAF6;">{{ data[exon][primer]["f_primer"].seq }}</span>{{ data[exon][primer]["first_gap"].seq|safe }}<span class="border border-success rounded" style="background-color: #E8F5E9;">{{ data[exon][primer]["exon"].seq|safe }}</span>{{ data[exon][primer]["second_gap"].seq|safe }}<span class="border border-danger rounded" style="background-color: #FFEBEE;">{{ data[exon][primer]["r_primer"].seq }}</span></span><span class="text-muted fw-light">{{ data[exon][primer]["post_primer"].seq }}</span>
+                      <div class=""><span class="text-muted fw-light">{{ data[exon][primer]["pre_primer"].seq }}</span><span class="text-dark"><span class="border border-primary rounded" style="background-color: #E8EAF6;">{{ data[exon][primer]["f_primer"].seq }}</span>{{ data[exon][primer]["first_gap"].seq|safe }}<span class="border border-success rounded" style="background-color: #E8F5E9;">{{ data[exon][primer]["exon"].seq|upper|safe }}</span>{{ data[exon][primer]["second_gap"].seq|safe }}<span class="border border-danger rounded" style="background-color: #FFEBEE;">{{ data[exon][primer]["r_primer"].seq }}</span></span><span class="text-muted fw-light">{{ data[exon][primer]["post_primer"].seq }}</span>
                       </div>
                       <br>
                       <br>
