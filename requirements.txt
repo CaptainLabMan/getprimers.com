@@ -63,3 +63,6 @@ wcwidth==0.1.9
 websocket-client==0.59.0
 Werkzeug==1.0.1
 WTForms==2.3.3
+decorator-5.1.0
+geocoder-1.38.1
+ratelim-0.1.6
