@@ -520,6 +520,7 @@ def tests():
     ip_dict['client_ip1']=client_ip1
     ip_dict['client_ip2']=client_ip2
     ip_dict['client_ip3']=client_ip3
+    wtf = 'wtf'
     return ip_dict
 
 
