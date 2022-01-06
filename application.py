@@ -1,5 +1,5 @@
 from flask import Flask, render_template, json, request, url_for, jsonify
-import requests, sys, time, threading, re, math, random, cgi
+import requests, sys, time, threading, re, math, random, cgi, geocoder
 from jinja2 import Template
 from gp_clear_code import get_transcripts, get_exons, get_primers, get_seq_len, get_reverse_complement_seq, get_gene_id, get_gc_content_f, pb_server_status_checker, get_clear_seq_for_textarea
 
@@ -513,15 +513,14 @@ def statuses():
 
 @application.route('/tests', methods=['GET', 'POST'])
 def tests():
-    client_ip1 = jsonify({'ip': request.remote_addr}).json
-    client_ip2 = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
-    client_ip3 = request.environ['REMOTE_ADDR']
-    ip_dict = {}
-    ip_dict['client_ip1']=client_ip1
-    ip_dict['client_ip2']=client_ip2
-    ip_dict['client_ip3']=client_ip3
-    wtf = 'wtf'
-    return ip_dict
+    client_ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    g = geocoder.ip('{}'.format(client_ip))
+    g = g.json
+    tests_dict = {}
+    tests_dict['client_ip']=client_ip
+    tests_dict['g']=g
+
+    return tests_dict
 
 
 if __name__ == '__main__':
