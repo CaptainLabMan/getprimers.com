@@ -1,11 +1,4 @@
 
-def state_statuses(statuses_dict, exon, gp_request_id, state):
-    import json
-    statuses_dict[exon]=state
-    statuses_file_name = 'status_of_{}'.format(gp_request_id)
-    with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
-        json.dump(statuses_dict, statuses_file)
-
 def cyc_post_req_for_ens(server, link, headers, data):
     import requests, urllib3, time
     req_status = False
@@ -265,9 +258,9 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
     data_file_name = 'data_of_{}'.format(gp_request_id)
     data_dict = {}
-    data_dict['pb_server_status']={}
+    data_dict['pb_server_status']=[{}]
 
-    statuses_dict = {}
+    statuses_dict = [{}]
     statuses_file_name = 'status_of_{}'.format(gp_request_id)
     with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
         json.dump('{}', statuses_file)
@@ -298,29 +291,32 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
     #Получение данных о расположении UTRs транскрипта и изменение позиций первого и последнего экзонов если задан чекбокс
     if include_UTRs != ['checked']:
-        link = "/lookup/id/{}?expand=1;utr=1".format(short_transcript_id)
-        headers = {"Content-Type" : "application/json"}
-        UTRs_request = cyc_get_req_for_ens(server, link, headers)
-        UTRs_request = UTRs_request.json()
-        UTRs_request = UTRs_request['UTR']
-        UTRs_dict = {}
-        for UTR in UTRs_request:
-            if UTR['object_type'] == 'five_prime_UTR':
-                UTRs_dict['five_prime_UTR'] = UTR
-            elif UTR['object_type'] == 'three_prime_UTR':
-                UTRs_dict['three_prime_UTR'] = UTR
+        try:
+            link = "/lookup/id/{}?expand=1;utr=1".format(short_transcript_id)
+            headers = {"Content-Type" : "application/json"}
+            UTRs_request = cyc_get_req_for_ens(server, link, headers)
+            UTRs_request = UTRs_request.json()
+            UTRs_request = UTRs_request['UTR']
+            UTRs_dict = {}
+            for UTR in UTRs_request:
+                if UTR['object_type'] == 'five_prime_UTR':
+                    UTRs_dict['five_prime_UTR'] = UTR
+                elif UTR['object_type'] == 'three_prime_UTR':
+                    UTRs_dict['three_prime_UTR'] = UTR
 
-        for exon in dict_exons:
-            if strand == '-1':
-                if dict_exons[exon]['end'] == UTRs_dict['five_prime_UTR']['end']:
-                    dict_exons[exon]['end'] = UTRs_dict['five_prime_UTR']['start'] - 1
-                if dict_exons[exon]['start'] == UTRs_dict['three_prime_UTR']['start']:
-                    dict_exons[exon]['start'] = UTRs_dict['three_prime_UTR']['end'] + 1
-            elif strand == '1':
-                if dict_exons[exon]['start'] == UTRs_dict['five_prime_UTR']['start']:
-                    dict_exons[exon]['start'] = UTRs_dict['five_prime_UTR']['end'] + 1
-                if dict_exons[exon]['end'] == UTRs_dict['three_prime_UTR']['end']:
-                    dict_exons[exon]['end'] = UTRs_dict['three_prime_UTR']['start'] - 1
+            for exon in dict_exons:
+                if strand == '-1':
+                    if dict_exons[exon]['end'] == UTRs_dict['five_prime_UTR']['end']:
+                        dict_exons[exon]['end'] = UTRs_dict['five_prime_UTR']['start'] - 1
+                    if dict_exons[exon]['start'] == UTRs_dict['three_prime_UTR']['start']:
+                        dict_exons[exon]['start'] = UTRs_dict['three_prime_UTR']['end'] + 1
+                elif strand == '1':
+                    if dict_exons[exon]['start'] == UTRs_dict['five_prime_UTR']['start']:
+                        dict_exons[exon]['start'] = UTRs_dict['five_prime_UTR']['end'] + 1
+                    if dict_exons[exon]['end'] == UTRs_dict['three_prime_UTR']['end']:
+                        dict_exons[exon]['end'] = UTRs_dict['three_prime_UTR']['start'] - 1
+        except:
+            print('No UTRs?')
 
     #Здесь происходит формирование списка и словаря для cross_search, то ест здесь объединяются экзоны с максимальной заданной длиной - cross_search_max_distance
     if CROSS_SEARCH == ['checked']:
@@ -412,8 +408,11 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
         print(dict_exons)
 
         data_dict['taken_exons']=taken_exons_id
+        #print('_______________________________________________________________________________')
+        #print(data_dict)
         with open('data/{}.json'.format(data_file_name), 'w') as data_file:
             json.dump(data_dict, data_file)
+        #print('_______________________________________________________________________________')
 
 
     # Часть для получения последовательностей для ПраймерБласта + Часть по рассчетам для вставки в Праймер бласт
@@ -427,7 +426,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
 
     def get_get_primers(element, result_dict, statuses_dict, gp_request_id, F_SEARCH_DISTANCE_PB, R_SEARCH_DISTANCE_PB, FIVE_SAVE_EXON_DISTANCE_PB, THREE_SAVE_EXON_DISTANCE_PB, info_dict, auto_distances):
 
-        state_statuses(statuses_dict, element, gp_request_id, 'started')
+        try:
+            state_statuses(statuses_dict, element, gp_request_id, 'started')
+        except:
+            print('Some error in statuses 1 (gp.py)')
         #Здесь начало авто-дистант поиска
         if auto_distances == ['checked'] and SEARCH_SPECIFIC_PRIMER == ['checked']:
             F_SEARCH_DISTANCE_PB = 125
@@ -574,7 +576,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                 state = 'request_to_pb'
             elif 'additional primers design' in request_status:
                 state = request_status
-            state_statuses(statuses_dict, element, gp_request_id, state)
+            try:
+                state_statuses(statuses_dict, element, gp_request_id, state)
+            except:
+                print('Some error in statuses 2 (gp.py)')
 
             #Здесь условная конструкция, которая если SEARCH_SPECIFIC_PRIMER = [], говорит о том, что выбран неспецифический подбор праймеров
             #а значит нет смысла брать ссылку из первого запроса на второй запрос, который специфически подбирает праймеры. В этом случае второй запрос, который далее
@@ -615,7 +620,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         r_timeout += 15
                         #r2 = requests.get(pb_specific_link)
                         r2 = cyc_get_req_for_pb(pb_specific_link)
-                        pb_server_status_checker(data_file_name, data_dict, r2.text, element)
+                        try:
+                            pb_server_status_checker(data_file_name, data_dict, r2.text, element)
+                        except:
+                            print('Some error in pb_server_status_checker 1')
                         count_of_requests += 1
                         print('\nRequest {} for {}'.format(count_of_requests, exon_number_for_thread))
                         print('Time has pass - {} sec. Max waiting time - {} sec'.format(r_timeout, max_waiting_time_for_pb))
@@ -623,7 +631,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                             print(pb_specific_link)
                 else:
                     r2 = r
-                    pb_server_status_checker(data_file_name, data_dict, r2.text, element)
+                    try:
+                        pb_server_status_checker(data_file_name, data_dict, r2.text, element)
+                    except:
+                        print('Some error in pb_server_status_checker 2')
             elif SEARCH_SPECIFIC_PRIMER == ['checked']:
                 def pb_response_status_f(pb_response):
                     pb_response_status = ''
@@ -658,7 +669,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #r = requests.get(pb_specific_link)
                         #print('Start primers_design_in_progress_for_{}'.format(element))
                         r = cyc_get_req_for_pb(pb_specific_link)
-                        pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                        try:
+                            pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                        except:
+                            print('Some error in pb_server_status_checker 3')
                         pb_response_status = pb_response_status_f(r)
                         #print('End primers_design_in_progress_for_{}'.format(element))
                     elif pb_response_status == 'pb_redirect':
@@ -669,7 +683,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #r = requests.get(pb_specific_link)
                         #print('Start pb_redirect')
                         r = cyc_get_req_for_pb(pb_specific_link)
-                        pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                        try:
+                            pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                        except:
+                            print('Some error in pb_server_status_checker 1')
                         pb_response_status = pb_response_status_f(r)
                         #print('End pb_redirect')
                     elif pb_response_status == 'highly_similar_seq':
@@ -778,7 +795,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #r = cycreq(requests.post(url, data=all_inputs_dict, timeout=None))
                         #print('Start highly_similar_seq')
                         r = cyc_post_req(url, all_inputs_dict)
-                        pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                        try:
+                            pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                        except:
+                            print('Some error in pb_server_status_checker 4')
                         #print(r.text)
                         #print(r.headers)
                         pb_response_status = pb_response_status_f(r)
@@ -808,6 +828,10 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
             #повторять запрос
             #После того как q не будет в р2.текст, программа будет идти дальше
             html_primers = r2.text
+            try:
+                pb_server_status_checker(data_file_name, data_dict, html_primers, element)
+            except:
+                print('Some error in pb_server_status_checker 5')
             primers_search_dict['html_primers']=html_primers
 
             #_______________________________________________________________________________
@@ -1420,35 +1444,17 @@ def get_gc_content_f(seq):
 
     return gc_content
 
-'''
-def primers_design_time_counter(taken_exons, SEARCH_SPECIFIC_PRIMER, NO_SNP, pb_server_status):
-    import math
-    waiting_time_dict = {}
-    taken_exons_count = len(taken_exons)
-    primers_design_time = 0
-    max_primers_design_time = 0
-    if SEARCH_SPECIFIC_PRIMER == ['checked'] and NO_SNP == ['checked']:
-        primers_design_time = (int(taken_exons_count) * 30) + 210
-    elif SEARCH_SPECIFIC_PRIMER == ['checked'] and NO_SNP == []:
-        primers_design_time = (int(taken_exons_count) * 2) + 210
-    elif SEARCH_SPECIFIC_PRIMER == [] and NO_SNP == []:
-        primers_design_time = int(taken_exons_count) * 2
-    counted_primers_design_time = math.ceil(primers_design_time / 60)
 
-    if pb_server_status == 'ok':
-        max_primers_design_time = math.ceil((primers_design_time + 421 - 210) / 60)
-    elif pb_server_status == 'overloaded':
-        max_primers_design_time = math.ceil((primers_design_time + 1201 - 210) / 60)
-
-    waiting_time_dict['primers_design_time']=counted_primers_design_time
-    waiting_time_dict['max_primers_design_time']=max_primers_design_time
-
-    return waiting_time_dict
-'''
+def state_statuses(statuses_dict, exon, gp_request_id, state):
+    import json
+    statuses_dict[0][exon]=state
+    statuses_file_name = 'status_of_{}'.format(gp_request_id)
+    with open('statuses/{}.json'.format(statuses_file_name), 'w') as statuses_file:
+        json.dump(statuses_dict, statuses_file)
 
 
 def pb_server_status_checker(data_file_name, data_dict, html_page, element):
-    import json
+    import json, time
     # Your request is waiting to be processed...our system has temporarily reached full capacity and the wait time can be much longer than usual.
     server_overloaded_message = 'Your request is waiting to be processed'
     pb_server_status = ''
@@ -1461,35 +1467,39 @@ def pb_server_status_checker(data_file_name, data_dict, html_page, element):
         with open('data/{}.json'.format(data_file_name)) as data_file:
             data_dict = json.load(data_file)
     except:
-        print('Some error occured while opening data.json file 1 (gp.py)')
-        success = False
-        while success == False:
-            try:
-                with open('data/{}.json'.format(data_file_name)) as data_file:
-                    data_dict = json.load(data_file)
-                success = True
-            except:
-                print('Some error occured while opening data.json file 2 (gp.py)')
+       print('Some error occured while opening data.json file 1 (gp.py)')
+    #    success = False
+    #    while success == False:
+    #        time.sleep(1)
+    #        try:
+    #            with open('data/{}.json'.format(data_file_name)) as data_file:
+    #                data_dict = json.load(data_file)
+    #            success = True
+    #        except:
+    #            print('Some error occured while opening data.json file 2 (gp.py)')
 
-    data_dict['pb_server_status'][element]=pb_server_status
+    data_dict['pb_server_status'][0][element]=pb_server_status
+    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+    print(data_dict)
+    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     try:
         with open('data/{}.json'.format(data_file_name), 'w') as data_file:
             json.dump(data_dict, data_file)
     except:
-        print('Some error occured while opening data.json file 1 (gp.py)')
-        success = False
-        while success == False:
-            try:
-                with open('data/{}.json'.format(data_file_name), 'w') as data_file:
-                    json.dump(data_dict, data_file)
-                success = True
-            except:
-                print('Some error occured while opening data.json file 2 (gp.py)')
-                time.sleep(1)
+        print('Some error occured while opening data.json file 3 (gp.py)')
+        #success = False
+        #while success == False:
+        #    time.sleep(1)
+        #    try:
+        #        with open('data/{}.json'.format(data_file_name), 'w') as data_file:
+        #            json.dump(data_dict, data_file)
+        #        success = True
+        #    except:
+        #        print('Some error occured while opening data.json file 4 (gp.py)')
 
 
 def requests_statistic(gene_name, taken_exons, exons_id):
-    import json
+    import json, time
     gene_name = gene_name.upper()
     requests_statistic_file_name = 'requests_statistic'
 
@@ -1503,7 +1513,7 @@ def requests_statistic(gene_name, taken_exons, exons_id):
         requests_statistic_dict[gene_name]={}
         requests_statistic_dict[gene_name]['requests_count']=1
     elif gene_name in requests_statistic_dict:
-        requests_statistic_dict[gene_name]['requests_count']=requests_statistic_dict[gene_name]['requests_count'] + 1
+        requests_statistic_dict[gene_name]['requests_count']+=1
 
     with open('statistic_data/{}.json'.format(requests_statistic_file_name), 'w') as requests_statistic_file:
         json.dump(requests_statistic_dict, requests_statistic_file)

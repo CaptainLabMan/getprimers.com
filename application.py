@@ -341,6 +341,7 @@ def results_table():
 
 @application.route('/statuses', methods=['GET', 'POST'])
 def statuses():
+    import time
     #all_statuses = ['started', 'request_to_pb', 'additional primers design', 'request_from_pb_received', 'primers_were_found', 'primers_were_not_found', 'polymorphisms_checking', 'primers_do_not_contain_polymorphisms', 'primers_contain_polymorphisms', 'completed']
     time.sleep(2)
     data = request.get_json()
@@ -350,10 +351,14 @@ def statuses():
     try:
         with open('statuses/{}.json'.format(statuses_file_name)) as statuses_file:
             statuses_dict = json.load(statuses_file)
+            print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+            print(statuses_dict)
+            print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     except:
         print('Error in getting statuses_dict 1')
         get_dict = False
         while get_dict == False:
+            time.sleep(2)
             try:
                 with open('statuses/{}.json'.format(statuses_file_name)) as statuses_file:
                     statuses_dict = json.load(statuses_file)
@@ -366,22 +371,32 @@ def statuses():
     try:
         with open('data/{}.json'.format(data_file_name)) as data_file:
             data_dict = json.load(data_file)
+            print('3333333333333333333333333333333333333333333333333333333333333333333333')
+            print(data_dict)
+            print('33333333333333333333333333333333333333333333333333333333333333333333333')
     except:
         print('Some error occured while opening data.json file 1 (application.py)')
         success = False
         while success == False:
+            time.sleep(2)
             try:
                 with open('data/{}.json'.format(data_file_name)) as data_file:
                     data_dict = json.load(data_file)
                 success = True
             except:
                 print('Some error occured while opening data.json file 2 (application.py)')
-                time.sleep(1)
+    print('111111111111111111111111111111111111111111111111111111111111111111111111111111111111')
+    print(data_dict)
+    print('111111111111111111111111111111111111111111111111111111111111111111111111111111111111')
+    print('222222222222222222222222222222222222222222222222222222222222222222222222222222222222')
+    print(data_dict)
+    print('222222222222222222222222222222222222222222222222222222222222222222222222222222222222')
     taken_exons = data_dict['taken_exons']
     taken_exons_count = len(taken_exons)
 
     design_completed = False
     completed_exons = []
+    statuses_dict = statuses_dict[0]
     try:
         for status in statuses_dict:
             if statuses_dict[status] == 'completed':
@@ -390,6 +405,7 @@ def statuses():
         print('Some error in statuses 1')
         success = False
         while success == False:
+            time.sleep(2)
             try:
                 with open('statuses/{}.json'.format(statuses_file_name)) as statuses_file:
                     statuses_dict = json.load(statuses_file)
@@ -450,7 +466,7 @@ def statuses():
     def pb_server_status_for_users(form_params_data, data_dict):
         SEARCH_SPECIFIC_PRIMER = form_params_data['SEARCH_SPECIFIC_PRIMER']
         NO_SNP = form_params_data['NO_SNP']
-        pb_server_status_for_each_exon = data_dict['pb_server_status']
+        pb_server_status_for_each_exon = data_dict['pb_server_status'][0]
 
         pb_server_status = ''
         for exon_status in pb_server_status_for_each_exon:
@@ -513,15 +529,44 @@ def statuses():
 
 @application.route('/tests', methods=['GET', 'POST'])
 def tests():
-    client_ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
-    #client_ip = '37.144.247.117'
-    g = geocoder.ip('{}'.format(client_ip))
-    g = g.json
-    tests_dict = {}
-    tests_dict['client_ip']=client_ip
-    tests_dict['g']=g
+    def get_clients_data():
+        client_ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        client_ip = '37.144.247.117'
+        #client_ip = '204.14.73.129'
+        client_data = geocoder.ip('{}'.format(client_ip))
+        client_data = client_data.json
+        print(client_data)
+        client_country = client_data['country']
+        client_city = client_data['city']
+        #client_addres = client_data['addres']
+        client_data_file_name = 'clients_data'
+        with open('clients_data/{}.json'.format(client_data_file_name)) as clients_data_file:
+            clients_data_dict = json.load(clients_data_file)
 
-    return tests_dict
+        if 'total_requests' not in clients_data_dict:
+            clients_data_dict['total_requests']=1
+        elif 'total_requests' in clients_data_dict:
+            clients_data_dict['total_requests']+=1
+
+        if client_country not in clients_data_dict:
+            clients_data_dict[client_country]={}
+            clients_data_dict[client_country]['requests_count']=1
+            clients_data_dict[client_country][client_city]={}
+            clients_data_dict[client_country][client_city]['requests_count']=1
+        elif client_country in clients_data_dict:
+            clients_data_dict[client_country]['requests_count']+=1
+            if client_city not in clients_data_dict[client_country]:
+                clients_data_dict[client_country][client_city]={}
+                clients_data_dict[client_country][client_city]['requests_count']=1
+            elif client_city in clients_data_dict[client_country]:
+                clients_data_dict[client_country][client_city]['requests_count']+=1
+
+        with open('clients_data/{}.json'.format(client_data_file_name), 'w') as clients_data_file:
+            json.dump(clients_data_dict, clients_data_file)
+
+        return clients_data_dict
+
+    return get_clients_data()
 
 
 if __name__ == '__main__':
