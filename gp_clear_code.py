@@ -589,18 +589,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
             #далее будет использована во втором запросе для получения хтмл страницы со специфиечскими праймерами.
             pb_link_checker = '' # Нужно для добавления ссылки если она есть
             r_timeout = 0
-            max_waiting_time_for_pb = 1200
-
-            def pb_timeout_checker(pb_response):
-                #  Your request is waiting to be processed...our system has temporarily reached full capacity and the wait time can be much longer than usual.
-                server_is_overloaded = 'our system has temporarily reached full capacity and the wait time can be much longer than usual.'
-                max_waiting_time_for_pb = 600
-                if server_is_overloaded in pb_response:
-                    max_waiting_time_for_pb = 1100
-                print('Max waiting time: {}'.format(max_waiting_time_for_pb))
-
-                return max_waiting_time_for_pb
-
+            max_waiting_time_for_pb = 600
 
             if SEARCH_SPECIFIC_PRIMER == []:
                 q = 'Making primers specific to your PCR template.'
@@ -615,13 +604,12 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     r_timeout = 0
                     count_of_requests = 1
                     while q in r2.text and r_timeout < max_waiting_time_for_pb:
-                        max_waiting_time_for_pb = pb_timeout_checker(r.text)
                         time.sleep(15)
                         r_timeout += 15
                         #r2 = requests.get(pb_specific_link)
                         r2 = cyc_get_req_for_pb(pb_specific_link)
                         try:
-                            pb_server_status_checker(data_file_name, data_dict, r2.text, element)
+                            max_waiting_time_for_pb = pb_server_status_checker(data_file_name, data_dict, r2.text, element)
                         except:
                             print('Some error in pb_server_status_checker 1')
                         count_of_requests += 1
@@ -632,7 +620,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                 else:
                     r2 = r
                     try:
-                        pb_server_status_checker(data_file_name, data_dict, r2.text, element)
+                        max_waiting_time_for_pb = pb_server_status_checker(data_file_name, data_dict, r2.text, element)
                     except:
                         print('Some error in pb_server_status_checker 2')
             elif SEARCH_SPECIFIC_PRIMER == ['checked']:
@@ -659,9 +647,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                 waiting_time_is_over = ''
                 wrong_params = ''
                 while pb_response_status != 'primers_is_ready' and r_timeout < max_waiting_time_for_pb:
-                    max_waiting_time_for_pb = pb_timeout_checker(r.text)
                     if pb_response_status == 'primers_design_in_progress':
-                        time.sleep(5)
                         pb_link_checker = 'checked'
                         pb_specific_link = '{}'.format(r.headers['NCBI-RCGI-RetryURL'])
                         #primers_search_dict['pb_specific_link'] = pb_specific_link
@@ -670,7 +656,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #print('Start primers_design_in_progress_for_{}'.format(element))
                         r = cyc_get_req_for_pb(pb_specific_link)
                         try:
-                            pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                            max_waiting_time_for_pb = pb_server_status_checker(data_file_name, data_dict, r.text, element)
                         except:
                             print('Some error in pb_server_status_checker 3')
                         pb_response_status = pb_response_status_f(r)
@@ -684,7 +670,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #print('Start pb_redirect')
                         r = cyc_get_req_for_pb(pb_specific_link)
                         try:
-                            pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                            max_waiting_time_for_pb = pb_server_status_checker(data_file_name, data_dict, r.text, element)
                         except:
                             print('Some error in pb_server_status_checker 1')
                         pb_response_status = pb_response_status_f(r)
@@ -796,7 +782,7 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                         #print('Start highly_similar_seq')
                         r = cyc_post_req(url, all_inputs_dict)
                         try:
-                            pb_server_status_checker(data_file_name, data_dict, r.text, element)
+                            max_waiting_time_for_pb = pb_server_status_checker(data_file_name, data_dict, r.text, element)
                         except:
                             print('Some error in pb_server_status_checker 4')
                         #print(r.text)
@@ -806,9 +792,11 @@ def get_primers(gp_request_id, gene_name, SPECIES, chromosome, strand, taken_exo
                     else:
                         #print('ELSE')
                         break
-                    time.sleep(1)
-                    r_timeout += 1
+                    print(max_waiting_time_for_pb)
+                    time.sleep(5)
+                    r_timeout += 5
                     #print(r_timeout)
+
                 else:
                     if r_timeout >= max_waiting_time_for_pb:
                         waiting_time_is_over = 'waiting_time_is_over'
@@ -1458,10 +1446,13 @@ def pb_server_status_checker(data_file_name, data_dict, html_page, element):
     # Your request is waiting to be processed...our system has temporarily reached full capacity and the wait time can be much longer than usual.
     server_overloaded_message = 'Your request is waiting to be processed'
     pb_server_status = ''
+    max_waiting_time_for_pb = 0
     if server_overloaded_message in html_page:
         pb_server_status = 'overloaded'
+        max_waiting_time_for_pb = 2400
     elif server_overloaded_message not in html_page:
         pb_server_status = 'ok'
+        max_waiting_time_for_pb = 600
 
     try:
         with open('data/{}.json'.format(data_file_name)) as data_file:
@@ -1479,9 +1470,6 @@ def pb_server_status_checker(data_file_name, data_dict, html_page, element):
     #            print('Some error occured while opening data.json file 2 (gp.py)')
 
     data_dict['pb_server_status'][0][element]=pb_server_status
-    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-    print(data_dict)
-    print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     try:
         with open('data/{}.json'.format(data_file_name), 'w') as data_file:
             json.dump(data_dict, data_file)
@@ -1496,6 +1484,9 @@ def pb_server_status_checker(data_file_name, data_dict, html_page, element):
         #        success = True
         #    except:
         #        print('Some error occured while opening data.json file 4 (gp.py)')
+
+    #print(max_waiting_time_for_pb)
+    return max_waiting_time_for_pb
 
 
 def requests_statistic(gene_name, taken_exons, exons_id):

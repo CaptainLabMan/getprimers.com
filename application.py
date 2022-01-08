@@ -332,7 +332,6 @@ def results_table():
         taken_primers_dict[taken_primer_pair]['tm_R']=result_dict[exon][primer_pair]['tm_R']
         taken_primers_dict[taken_primer_pair]['len_amp']=result_dict[exon][primer_pair]['len_amp']
         taken_primers_dict[taken_primer_pair]['scale_value']=scale_value
-    print(taken_primers_dict)
     if taken_primers != []:
         return render_template('results_table.html', taken_primers_dict=taken_primers_dict, auto_naming=auto_naming, show_scale=show_scale, tm_and_product_length=tm_and_product_length, name_column=name_column)
     elif taken_primers == []:
@@ -343,7 +342,7 @@ def results_table():
 def statuses():
     import time
     #all_statuses = ['started', 'request_to_pb', 'additional primers design', 'request_from_pb_received', 'primers_were_found', 'primers_were_not_found', 'polymorphisms_checking', 'primers_do_not_contain_polymorphisms', 'primers_contain_polymorphisms', 'completed']
-    time.sleep(2)
+    time.sleep(3)
     data = request.get_json()
     gp_request_id = data['gp_request_id']
 
@@ -351,9 +350,6 @@ def statuses():
     try:
         with open('statuses/{}.json'.format(statuses_file_name)) as statuses_file:
             statuses_dict = json.load(statuses_file)
-            print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-            print(statuses_dict)
-            print('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
     except:
         print('Error in getting statuses_dict 1')
         get_dict = False
@@ -365,15 +361,13 @@ def statuses():
                 get_dict = True
             except:
                 print('Error in getting statuses_dict 2')
+    statuses_dict = statuses_dict[0]
 
 
     data_file_name = 'data_of_{}'.format(gp_request_id)
     try:
         with open('data/{}.json'.format(data_file_name)) as data_file:
             data_dict = json.load(data_file)
-            print('3333333333333333333333333333333333333333333333333333333333333333333333')
-            print(data_dict)
-            print('33333333333333333333333333333333333333333333333333333333333333333333333')
     except:
         print('Some error occured while opening data.json file 1 (application.py)')
         success = False
@@ -385,24 +379,17 @@ def statuses():
                 success = True
             except:
                 print('Some error occured while opening data.json file 2 (application.py)')
-    print('111111111111111111111111111111111111111111111111111111111111111111111111111111111111')
-    print(data_dict)
-    print('111111111111111111111111111111111111111111111111111111111111111111111111111111111111')
-    print('222222222222222222222222222222222222222222222222222222222222222222222222222222222222')
-    print(data_dict)
-    print('222222222222222222222222222222222222222222222222222222222222222222222222222222222222')
     taken_exons = data_dict['taken_exons']
     taken_exons_count = len(taken_exons)
 
     design_completed = False
     completed_exons = []
-    statuses_dict = statuses_dict[0]
     try:
         for status in statuses_dict:
             if statuses_dict[status] == 'completed':
                 completed_exons.append(statuses_dict[status])
     except:
-        print('Some error in statuses 1')
+        print('Some error in statuses 1 (application.py)')
         success = False
         while success == False:
             time.sleep(2)
@@ -416,7 +403,7 @@ def statuses():
                 success = True
                 print('success')
             except:
-                print('Some error in statuses 2')
+                print('Some error in statuses 2 (application.py)')
     completed_exons_count = len(completed_exons)
 
     if taken_exons_count == completed_exons_count:
